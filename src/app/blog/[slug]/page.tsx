@@ -14,14 +14,16 @@ import { Card } from "@/components/ui/card"
 export const revalidate = 60
 
 interface PageProps {
-    params: {
+    params: Promise<{
         slug: string
-    }
+    }>
 }
 
 async function getPost(slug: string): Promise<Post | null> {
     try {
+        console.log('Fetching post with slug:', slug)
         const post = await client.fetch(postQuery, { slug })
+        console.log('Post found:', post ? 'yes' : 'no')
         return post
     } catch (error) {
         console.error('Error fetching post:', error)
@@ -40,12 +42,16 @@ async function getRecentPosts(): Promise<Post[]> {
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
+    const { slug } = await params
+    console.log('Blog post page - slug:', slug)
+
     const [post, recentPosts] = await Promise.all([
-        getPost(params.slug),
+        getPost(slug),
         getRecentPosts()
     ])
 
     if (!post) {
+        console.log('Post not found, returning 404')
         notFound()
     }
 
