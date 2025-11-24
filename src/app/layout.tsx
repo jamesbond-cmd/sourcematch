@@ -7,8 +7,8 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "SourceMatch - B2B Food & Beverage Sourcing Platform",
-    description: "Connect with verified suppliers for your food and beverage sourcing needs",
+    title: "Batch Sourcing - AI-Powered Batch Sourcing Platform",
+    description: "Connect with top suppliers worldwide using AI-driven matching.",
 };
 
 export default function RootLayout({

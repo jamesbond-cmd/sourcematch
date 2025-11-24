@@ -47,13 +47,14 @@ export default function SignupPage() {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background px-4">
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
-                    <Link href="/" className="inline-flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shadow-md">
-                            S
+                    <Link href="/" className="inline-flex items-center gap-2 mb-6">
+                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                            <span className="text-primary-foreground font-bold">B</span>
                         </div>
-                        <span className="font-bold text-2xl">SourceMatch</span>
+                        <span className="text-xl font-bold">Batch Sourcing</span>
                     </Link>
-                    <h2 className="mt-6 text-3xl font-bold">Create your account</h2>
+                    <h2 className="text-2xl font-bold">Create an account</h2>
+                    <p className="text-muted-foreground mt-2">Start sourcing smarter today</p>
                     <p className="mt-2 text-sm text-muted-foreground">
                         Already have an account?{" "}
                         <Link href="/login" className="font-medium text-primary hover:underline">

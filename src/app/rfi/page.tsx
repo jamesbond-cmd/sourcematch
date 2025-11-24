@@ -7,7 +7,7 @@ export default function RFIPage() {
             <header className="border-b">
                 <div className="container mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8">
                     <Link href="/" className="font-bold text-xl">
-                        B2B Sourcing
+                        Batch Sourcing
                     </Link>
                 </div>
             </header>
@@ -17,3 +17,4 @@ export default function RFIPage() {
         </div>
     )
 }
+

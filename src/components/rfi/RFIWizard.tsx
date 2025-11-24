@@ -216,102 +216,89 @@ export function RFIWizard() {
 
         setIsSubmitting(true)
         try {
-            // Step 1: Get or create user account
-            let userId = user?.id
-            if (!userId) {
-                console.log("Creating new user account...")
-                if (!data.password) {
-                    throw new Error("Password is required for new account creation")
-                }
-                await signUp(data.workEmail, data.password, {
-                    full_name: `${data.firstName} ${data.lastName}`,
+            let rfiId: string | undefined
+            let userId: string | undefined
+
+            if (!user) {
+                // GUEST FLOW: Use API to create account and RFI securely
+                console.log("Guest submission: Calling API...")
+                const response = await fetch('/api/rfi/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 })
-                // Get the newly created user
-                const { createClient } = await import("@/lib/supabase/client")
-                const supabase = createClient()
-                const { data: { user: newUser } } = await supabase.auth.getUser()
-                userId = newUser?.id
-                console.log("New user created:", userId)
+
+                const result = await response.json()
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to submit RFI')
+                }
+
+                console.log("API Submission success:", result)
+                rfiId = result.rfiId
+                userId = result.userId
+
+                // Auto-login to upload files
+                console.log("Auto-logging in...")
+                if (data.password) {
+                    await useAuth().signIn(data.workEmail, data.password)
+                }
             } else {
-                console.log("Using existing user:", userId)
-            }
+                // LOGGED-IN FLOW: Use existing client-side logic
+                userId = user.id
 
-            if (!userId) throw new Error("Failed to create user account")
-
-            // Step 2: Get or create company
-            let companyId: string | undefined
-
-            if (user) {
-                // User is logged in, fetch their profile to get company_id
+                // Step 2: Get or create company
+                let companyId: string | undefined
                 console.log("Fetching user profile...")
                 const profile = await supabaseClient.getProfile(userId)
                 companyId = profile?.company_id || undefined
-                console.log("Profile company_id:", companyId)
-            }
 
-            // Create company if user doesn't have one
-            if (!companyId) {
-                console.log("Creating new company...")
-                const company = await supabaseClient.createCompany({
-                    name: data.companyName,
-                    website: data.companyWebsite,
-                    country: data.country,
-                })
-                companyId = company.id
-                console.log("Company created:", companyId)
+                if (!companyId) {
+                    console.log("Creating new company...")
+                    const company = await supabaseClient.createCompany({
+                        name: data.companyName,
+                        website: data.companyWebsite,
+                        country: data.country,
+                    })
+                    companyId = company.id
 
-                // Update profile with company_id if user already exists
-                if (user) {
-                    console.log("Updating profile with company_id...")
+                    // Update profile
                     await supabaseClient.supabase
                         .from('profiles')
                         .update({ company_id: companyId })
                         .eq('id', userId)
                 }
+
+                // Step 4: Create RFI
+                console.log("Creating RFI...")
+                const rfiData = {
+                    company_id: companyId!,
+                    created_by: userId,
+                    product_name: data.productName,
+                    requirements: data.requirements,
+                    estimated_volume: data.estimatedVolume,
+                    target_price: data.guidancePrice || "",
+                    timeline: data.timeline,
+                    destination_markets: data.destinationMarkets,
+                    status: "submitted",
+                    ai_status: "pending",
+                    product_description: data.productDescription,
+                    volume_unit: data.volumeUnit,
+                }
+
+                const createdRFI = await supabaseClient.createRFI(rfiData)
+                rfiId = createdRFI.id
             }
 
-            // Step 3: Create or update profile (only for new users, existing users already have profile via trigger)
-            if (!user) {
-                console.log("Creating new profile...")
-                await supabaseClient.createProfile({
-                    id: userId,
-                    email: data.workEmail,
-                    full_name: `${data.firstName} ${data.lastName}`,
-                    role: "buyer",
-                    company_id: companyId,
-                })
-            }
-
-            // Step 4: Create RFI
-            console.log("Creating RFI...")
-            const rfiData = {
-                company_id: companyId!,
-                created_by: userId,
-                product_name: data.productName,
-                requirements: data.requirements,
-                estimated_volume: data.estimatedVolume,
-                target_price: data.guidancePrice || "",
-                timeline: data.timeline,
-                destination_markets: data.destinationMarkets,
-                status: "submitted",
-                ai_status: "pending",
-                product_description: data.productDescription,
-                volume_unit: data.volumeUnit,
-            }
-            console.log("RFI data:", rfiData)
-
-            const createdRFI = await supabaseClient.createRFI(rfiData)
-            console.log("RFI created successfully:", createdRFI)
-
-            // Step 5: Upload attachments if any
-            if (files.length > 0 && createdRFI.id) {
+            // Step 5: Upload attachments if any (Common for both flows)
+            if (files.length > 0 && rfiId) {
                 console.log(`Uploading ${files.length} files...`)
 
                 for (const file of files) {
                     try {
                         const fileExt = file.name.split('.').pop()
                         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
-                        const filePath = `${createdRFI.id}/${fileName}`
+                        const filePath = `${rfiId}/${fileName}`
 
                         // Upload file to storage
                         await supabaseClient.uploadFile("rfi-attachments", filePath, file)
@@ -321,7 +308,7 @@ export function RFIWizard() {
 
                         // Create attachment record
                         await supabaseClient.createAttachment({
-                            rfi_id: createdRFI.id,
+                            rfi_id: rfiId,
                             file_name: file.name,
                             file_path: filePath,
                             file_size: file.size,

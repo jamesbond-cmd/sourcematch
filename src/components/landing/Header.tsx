@@ -38,11 +38,11 @@ export function Header() {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center space-x-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-                            S
+                    <Link href="/" className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                            <span className="text-primary-foreground font-bold">B</span>
                         </div>
-                        <span className="font-bold text-xl">SourceMatch</span>
+                        <span className="text-xl font-bold">Batch Sourcing</span>
                     </Link>
 
                     {/* Desktop Navigation */}
