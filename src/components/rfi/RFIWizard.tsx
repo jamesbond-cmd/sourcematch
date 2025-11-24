@@ -27,6 +27,7 @@ export function RFIWizard() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isLoadingProfile, setIsLoadingProfile] = useState(true)
     const [isInitialized, setIsInitialized] = useState(false)
+    const [hasCompany, setHasCompany] = useState(false) // Track if user has a company
 
     const methods = useForm<RFIFormData>({
         resolver: zodResolver(rfiSchema),
@@ -40,22 +41,7 @@ export function RFIWizard() {
         const savedStep = localStorage.getItem("rfi_wizard_step")
         const savedData = localStorage.getItem("rfi_wizard_data")
 
-        // Determine correct starting step
-        let step = 1
-        if (savedStep) {
-            step = parseInt(savedStep)
-        } else if (user) {
-            step = 3
-        }
-
-        // Ensure logged-in users don't see steps 1-2
-        if (user && step < 3) {
-            step = 3
-        }
-
-        setCurrentStep(step)
-
-        // Restore form data
+        // Restore form data first
         if (savedData) {
             try {
                 const parsedData = JSON.parse(savedData)
@@ -72,8 +58,6 @@ export function RFIWizard() {
                 console.error("Failed to parse saved wizard data", e)
             }
         }
-
-        setIsInitialized(true)
 
         // If user is logged in, fetch profile data
         if (user) {
@@ -99,24 +83,41 @@ export function RFIWizard() {
                                 .single()
 
                             if (company) {
+                                setHasCompany(true) // User has a company
                                 methods.setValue('companyName', company.name || '')
                                 methods.setValue('companyWebsite', company.website || '')
                                 methods.setValue('country', company.country || '')
                             }
                         }
                     }
-                } catch (error) { // Changed from profileError to error
+                } catch (error) {
                     console.log('No profile found for user, will create on RFI submission')
                     if (user.email) {
                         methods.setValue('workEmail', user.email)
                     }
                 } finally {
                     setIsLoadingProfile(false)
+
+                    // Determine correct starting step AFTER we know if user has company
+                    let step = 1
+                    if (savedStep) {
+                        step = parseInt(savedStep)
+                    } else if (user) {
+                        // If user has company, skip to product step (step 2), otherwise start at company step (step 1)
+                        step = hasCompany ? 2 : 1
+                    }
+
+                    setCurrentStep(step)
+                    setIsInitialized(true)
                 }
             }
             loadUserData()
         } else {
             setIsLoadingProfile(false)
+            // For non-logged-in users, start at step 1
+            const step = savedStep ? parseInt(savedStep) : 1
+            setCurrentStep(step)
+            setIsInitialized(true)
         }
     }, [loading, user, methods])
 
@@ -137,53 +138,79 @@ export function RFIWizard() {
         }
     }, [methods, isInitialized])
 
+    // Helper to get the actual step mapping based on user state
+    const getStepMapping = () => {
+        if (!user) {
+            // Non-logged-in: 1=Company, 2=Account, 3=Product, 4=Requirements, 5=Volumes, 6=Review
+            return { maxStep: 6, hasCompanyStep: true, hasAccountStep: true }
+        } else if (hasCompany) {
+            // Logged-in with company: 1=Product, 2=Requirements, 3=Volumes, 4=Review
+            return { maxStep: 4, hasCompanyStep: false, hasAccountStep: false }
+        } else {
+            // Logged-in without company: 1=Company, 2=Product, 3=Requirements, 4=Volumes, 5=Review
+            return { maxStep: 5, hasCompanyStep: true, hasAccountStep: false }
+        }
+    }
+
     const nextStep = async () => {
+        const mapping = getStepMapping()
+
         // Validate current step fields before moving
         let fieldsToValidate: (keyof RFIFormData)[] = []
 
-        switch (currentStep) {
-            case 1:
-                fieldsToValidate = ["companyName", "companyWebsite", "firstName", "lastName", "workEmail", "phone", "country"]
-                break
-            case 2:
-                fieldsToValidate = ["password", "termsAccepted"]
-                break
-            case 3:
-                fieldsToValidate = ["productName"]
-                break
-            case 4:
-                fieldsToValidate = ["requirements"]
-                break
-            case 5:
-                fieldsToValidate = ["estimatedVolume", "volumeUnit", "destinationMarkets", "timeline"]
-                break
-            case 6:
-                fieldsToValidate = ["rfiConfirmed"]
-                break
+        // Determine which fields to validate based on actual step content
+        if (!user) {
+            // Non-logged-in user flow
+            switch (currentStep) {
+                case 1: fieldsToValidate = ["companyName"]; break
+                case 2: fieldsToValidate = ["firstName", "lastName", "workEmail", "password", "termsAccepted"]; break
+                case 3: fieldsToValidate = ["productName"]; break
+                case 4: fieldsToValidate = ["requirements"]; break
+                case 5: fieldsToValidate = ["estimatedVolume", "volumeUnit", "destinationMarkets", "timeline"]; break
+                case 6: fieldsToValidate = ["rfiConfirmed"]; break
+            }
+        } else if (hasCompany) {
+            // Logged-in with company: skip company step
+            switch (currentStep) {
+                case 1: fieldsToValidate = ["productName"]; break
+                case 2: fieldsToValidate = ["requirements"]; break
+                case 3: fieldsToValidate = ["estimatedVolume", "volumeUnit", "destinationMarkets", "timeline"]; break
+                case 4: fieldsToValidate = ["rfiConfirmed"]; break
+            }
+        } else {
+            // Logged-in without company: show company step
+            switch (currentStep) {
+                case 1: fieldsToValidate = ["companyName"]; break
+                case 2: fieldsToValidate = ["productName"]; break
+                case 3: fieldsToValidate = ["requirements"]; break
+                case 4: fieldsToValidate = ["estimatedVolume", "volumeUnit", "destinationMarkets", "timeline"]; break
+                case 5: fieldsToValidate = ["rfiConfirmed"]; break
+            }
         }
 
         const isValid = await methods.trigger(fieldsToValidate)
-        if (isValid) {
-            if (currentStep < 7) {
-                setCurrentStep((prev) => prev + 1)
-            }
+        if (isValid && currentStep < mapping.maxStep) {
+            setCurrentStep((prev) => prev + 1)
         }
     }
 
     const prevStep = () => {
-        // Don't go back past step 3 if user is logged in
-        const minStep = user ? 3 : 1
-        if (currentStep > minStep) {
+        if (currentStep > 1) {
             setCurrentStep((prev) => prev - 1)
         }
     }
 
     const onSubmit = async (data: RFIFormData) => {
+        console.log("=== RFI SUBMISSION STARTED ===")
+        console.log("Form data:", data)
+        console.log("Current user:", user)
+
         setIsSubmitting(true)
         try {
             // Step 1: Get or create user account
             let userId = user?.id
             if (!userId) {
+                console.log("Creating new user account...")
                 if (!data.password) {
                     throw new Error("Password is required for new account creation")
                 }
@@ -195,6 +222,9 @@ export function RFIWizard() {
                 const supabase = createClient()
                 const { data: { user: newUser } } = await supabase.auth.getUser()
                 userId = newUser?.id
+                console.log("New user created:", userId)
+            } else {
+                console.log("Using existing user:", userId)
             }
 
             if (!userId) throw new Error("Failed to create user account")
@@ -204,21 +234,26 @@ export function RFIWizard() {
 
             if (user) {
                 // User is logged in, fetch their profile to get company_id
+                console.log("Fetching user profile...")
                 const profile = await supabaseClient.getProfile(userId)
                 companyId = profile?.company_id || undefined
+                console.log("Profile company_id:", companyId)
             }
 
             // Create company if user doesn't have one
             if (!companyId) {
+                console.log("Creating new company...")
                 const company = await supabaseClient.createCompany({
                     name: data.companyName,
                     website: data.companyWebsite,
                     country: data.country,
                 })
                 companyId = company.id
+                console.log("Company created:", companyId)
 
                 // Update profile with company_id if user already exists
                 if (user) {
+                    console.log("Updating profile with company_id...")
                     await supabaseClient.supabase
                         .from('profiles')
                         .update({ company_id: companyId })
@@ -228,6 +263,7 @@ export function RFIWizard() {
 
             // Step 3: Create or update profile (only for new users, existing users already have profile via trigger)
             if (!user) {
+                console.log("Creating new profile...")
                 await supabaseClient.createProfile({
                     id: userId,
                     email: data.workEmail,
@@ -238,7 +274,8 @@ export function RFIWizard() {
             }
 
             // Step 4: Create RFI
-            await supabaseClient.createRFI({
+            console.log("Creating RFI...")
+            const rfiData = {
                 company_id: companyId!,
                 created_by: userId,
                 product_name: data.productName,
@@ -251,25 +288,54 @@ export function RFIWizard() {
                 ai_status: "pending",
                 product_description: data.productDescription,
                 volume_unit: data.volumeUnit,
-            })
+            }
+            console.log("RFI data:", rfiData)
+
+            const createdRFI = await supabaseClient.createRFI(rfiData)
+            console.log("RFI created successfully:", createdRFI)
 
             toast.success("RFI submitted successfully!")
             // Clear saved data
             localStorage.removeItem("rfi_wizard_data")
             localStorage.removeItem("rfi_wizard_step")
             // Success! Move to dashboard
+            console.log("Moving to step 7 (success page)")
             setCurrentStep(7)
         } catch (error) {
-            console.error("Error submitting RFI:", error)
-            toast.error("Failed to submit RFI. Please try again.")
+            console.error("=== RFI SUBMISSION ERROR ===")
+            console.error("Error details:", error)
+            console.error("Error message:", error instanceof Error ? error.message : String(error))
+            toast.error(error instanceof Error ? error.message : "Failed to submit RFI. Please try again.")
         } finally {
             setIsSubmitting(false)
+            console.log("=== RFI SUBMISSION ENDED ===")
         }
+    }
+
+    const resetWizard = () => {
+        // Clear saved data
+        localStorage.removeItem("rfi_wizard_data")
+        localStorage.removeItem("rfi_wizard_step")
+
+        // Reset form
+        methods.reset()
+
+        // Reset state
+        setCurrentStep(hasCompany ? 1 : 1) // Will be recalculated in useEffect
+        setIsSubmitting(false)
+
+        // Trigger re-initialization
+        setIsInitialized(false)
+
+        // Re-run initialization after a brief delay
+        setTimeout(() => {
+            setIsInitialized(true)
+        }, 100)
     }
 
     // If we are on the dashboard step, render full width without the card wrapper/progress bar
     if (currentStep === 7) {
-        return <Step7Dashboard />
+        return <Step7Dashboard onReset={resetWizard} />
     }
 
     // Show loading state while initializing or fetching profile data
@@ -284,9 +350,10 @@ export function RFIWizard() {
         )
     }
 
-    // Calculate step numbers for display (logged-in users skip steps 1-2)
-    const totalSteps = user ? 4 : 6 // Steps 3-6 for logged in, 1-6 for new users
-    const displayStep = user ? currentStep - 2 : currentStep // Adjust display for logged-in users
+    // Calculate step numbers for display based on user state
+    const mapping = getStepMapping()
+    const totalSteps = mapping.maxStep
+    const displayStep = currentStep
     const progressPercent = (displayStep / totalSteps) * 100
 
     return (
@@ -317,30 +384,52 @@ export function RFIWizard() {
             <Card className="p-8 md:p-10 shadow-lg border-2">
                 <FormProvider {...methods}>
                     <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
-                        {!user && currentStep === 1 && <Step1CompanyDetails />}
-                        {!user && currentStep === 2 && <Step2AccountCreation />}
-                        {currentStep === 3 && <Step3ProductOverview />}
-                        {currentStep === 4 && <Step4Requirements />}
-                        {currentStep === 5 && <Step5Volumes />}
-                        {currentStep === 6 && <Step6Review />}
+                        {/* Wizard Steps - render based on user state and current step */}
+                        {!user && (
+                            <>
+                                {currentStep === 1 && <Step1CompanyDetails />}
+                                {currentStep === 2 && <Step2AccountCreation />}
+                                {currentStep === 3 && <Step3ProductOverview />}
+                                {currentStep === 4 && <Step4Requirements />}
+                                {currentStep === 5 && <Step5Volumes />}
+                                {currentStep === 6 && <Step6Review />}
+                            </>
+                        )}
+                        {user && hasCompany && (
+                            <>
+                                {currentStep === 1 && <Step3ProductOverview />}
+                                {currentStep === 2 && <Step4Requirements />}
+                                {currentStep === 3 && <Step5Volumes />}
+                                {currentStep === 4 && <Step6Review />}
+                            </>
+                        )}
+                        {user && !hasCompany && (
+                            <>
+                                {currentStep === 1 && <Step1CompanyDetails />}
+                                {currentStep === 2 && <Step3ProductOverview />}
+                                {currentStep === 3 && <Step4Requirements />}
+                                {currentStep === 4 && <Step5Volumes />}
+                                {currentStep === 5 && <Step6Review />}
+                            </>
+                        )}
 
                         <div className="flex justify-between pt-6 border-t">
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={prevStep}
-                                disabled={currentStep === (user ? 3 : 1)}
-                                className={`${currentStep === (user ? 3 : 1) ? "invisible" : ""} h-11 px-6`}
+                                disabled={currentStep === 1}
+                                className={`${currentStep === 1 ? "invisible" : ""} h-11 px-6`}
                             >
                                 ← Back
                             </Button>
                             <Button
                                 type="button"
-                                onClick={currentStep === 6 ? methods.handleSubmit(onSubmit) : nextStep}
+                                onClick={currentStep === getStepMapping().maxStep ? methods.handleSubmit(onSubmit) : nextStep}
                                 disabled={isSubmitting}
                                 className="h-11 px-8 shadow-md hover:shadow-lg transition-all"
                             >
-                                {currentStep === 6 ? (
+                                {currentStep === getStepMapping().maxStep ? (
                                     isSubmitting ? (
                                         <>
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
