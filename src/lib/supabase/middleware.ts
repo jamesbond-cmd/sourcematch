@@ -62,7 +62,7 @@ export async function updateSession(request: NextRequest) {
     if (
         !user &&
         (request.nextUrl.pathname.startsWith('/dashboard') ||
-            request.nextUrl.pathname.startsWith('/rfi'))
+            (request.nextUrl.pathname.startsWith('/rfi') && request.nextUrl.pathname !== '/rfi'))
     ) {
         // Redirect to login if accessing protected route without user
         const url = request.nextUrl.clone()

@@ -41,9 +41,18 @@ export function RFIWizard() {
 
         const savedStep = localStorage.getItem("rfi_wizard_step")
         const savedData = localStorage.getItem("rfi_wizard_data")
+        const savedOwner = localStorage.getItem("rfi_wizard_owner")
+        const currentOwner = user?.id || "guest"
 
-        // Restore form data first
-        if (savedData) {
+        // Check if the saved data belongs to the current user (or guest session)
+        if (savedOwner && savedOwner !== currentOwner) {
+            console.log("User changed, clearing saved wizard data")
+            localStorage.removeItem("rfi_wizard_data")
+            localStorage.removeItem("rfi_wizard_step")
+            localStorage.removeItem("rfi_wizard_owner")
+            // Do not restore data
+        } else if (savedData) {
+            // Restore form data if owner matches
             try {
                 const parsedData = JSON.parse(savedData)
                 if (parsedData) {
@@ -142,10 +151,11 @@ export function RFIWizard() {
         if (isInitialized) {
             const subscription = methods.watch((value) => {
                 localStorage.setItem("rfi_wizard_data", JSON.stringify(value))
+                localStorage.setItem("rfi_wizard_owner", user?.id || "guest")
             })
             return () => subscription.unsubscribe()
         }
-    }, [methods, isInitialized])
+    }, [methods, isInitialized, user])
 
     // Helper to get the actual step mapping based on user state
     const getStepMapping = () => {
@@ -345,6 +355,7 @@ export function RFIWizard() {
         // Clear saved data
         localStorage.removeItem("rfi_wizard_data")
         localStorage.removeItem("rfi_wizard_step")
+        localStorage.removeItem("rfi_wizard_owner")
 
         // Reset form
         methods.reset()
