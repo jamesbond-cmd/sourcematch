@@ -10,9 +10,9 @@ export const rfiSchema = z.object({
     phone: z.string().min(1, "Phone number is required"),
     country: z.string().min(1, "Country is required"),
 
-    // Step 2: Account Creation
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    termsAccepted: z.boolean().refine((val) => val === true, {
+    // Step 2: Account Creation (Optional for logged in users)
+    password: z.string().min(8, "Password must be at least 8 characters").optional().or(z.literal("")),
+    termsAccepted: z.boolean().optional().refine((val) => val === true || val === undefined, {
         message: "You must accept the terms and conditions",
     }),
 

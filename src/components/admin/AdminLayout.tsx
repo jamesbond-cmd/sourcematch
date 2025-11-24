@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useAuth } from "@/contexts/AuthContext"
+import { supabaseClient } from "@/lib/supabase/client"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -71,11 +72,25 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const [isMobileOpen, setIsMobileOpen] = useState(false)
 
     useEffect(() => {
-        if (!loading && !user) {
+        const checkAdminRole = async () => {
+            if (!user) return
+
+            try {
+                const profile = await supabaseClient.getProfile(user.id)
+                if (profile?.role !== 'admin') {
+                    router.push('/dashboard')
+                }
+            } catch (error) {
+                console.error("Error checking admin role:", error)
+                router.push('/dashboard')
+            }
+        }
+
+        if (!loading && user) {
+            checkAdminRole()
+        } else if (!loading && !user) {
             router.push("/login")
         }
-        // TODO: Add check for admin role
-        // if (user && user.role !== 'admin') router.push('/dashboard')
     }, [user, loading, router])
 
     if (loading) return null

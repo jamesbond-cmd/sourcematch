@@ -11,7 +11,7 @@ export interface RFI {
     destination_markets: string[]
     created_by?: string
     company_id?: string
-    [key: string]: any
+    [key: string]: unknown
 }
 
 export interface Company {
@@ -20,7 +20,7 @@ export interface Company {
     website?: string
     industry?: string
     description?: string
-    [key: string]: any
+    [key: string]: unknown
 }
 
 export interface Profile {
@@ -29,7 +29,7 @@ export interface Profile {
     full_name?: string
     role?: string
     company_id?: string
-    [key: string]: any
+    [key: string]: unknown
 }
 
 export interface Attachment {
@@ -40,7 +40,7 @@ export interface Attachment {
     file_size: number
     file_type: string
     file_url: string
-    [key: string]: any
+    [key: string]: unknown
 }
 
 export function createClient() {
@@ -86,7 +86,7 @@ export function createClient() {
                     getPublicUrl: () => ({ data: { publicUrl: "" } }),
                 }),
             },
-        } as any
+        } as unknown as ReturnType<typeof createBrowserClient>
     }
 
     return createBrowserClient(supabaseUrl, supabaseKey)

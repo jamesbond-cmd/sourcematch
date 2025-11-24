@@ -4,7 +4,7 @@ import { useState, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabaseClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Upload, X, FileText, CheckCircle2 } from "lucide-react"
+import { Upload, X, FileText } from "lucide-react"
 import { toast } from "sonner"
 
 interface FileUploadProps {
@@ -38,7 +38,7 @@ export function FileUpload({ rfiId, onUploadComplete }: FileUploadProps) {
         try {
             // 1. Upload file to storage
             const filePath = `${rfiId}/${Date.now()}-${selectedFile.name}`
-            const uploadData = await supabaseClient.uploadFile("rfi-attachments", filePath, selectedFile)
+            await supabaseClient.uploadFile("rfi-attachments", filePath, selectedFile)
 
             // Get public URL
             const publicUrl = await supabaseClient.getFileUrl("rfi-attachments", filePath)
@@ -69,21 +69,22 @@ export function FileUpload({ rfiId, onUploadComplete }: FileUploadProps) {
         <div className="space-y-4">
             <input
                 type="file"
+                id="rfi-file-upload"
                 ref={fileInputRef}
                 onChange={handleFileSelect}
-                className="hidden"
+                className="sr-only"
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
             />
 
             {!selectedFile ? (
-                <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                <label
+                    htmlFor="rfi-file-upload"
+                    className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors w-full"
                 >
                     <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                     <p className="text-sm font-medium">Click to upload a file</p>
                     <p className="text-xs text-muted-foreground mt-1">PDF, Word, Excel, Images (max 10MB)</p>
-                </div>
+                </label>
             ) : (
                 <div className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-4">

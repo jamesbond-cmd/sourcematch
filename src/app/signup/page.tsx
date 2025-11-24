@@ -44,11 +44,11 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-muted/50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background px-4">
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
-                    <Link href="/" className="inline-flex items-center space-x-2">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
+                    <Link href="/" className="inline-flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold shadow-md">
                             S
                         </div>
                         <span className="font-bold text-2xl">SourceMatch</span>
@@ -63,15 +63,15 @@ export default function SignupPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-                    <div className="space-y-4 rounded-lg border bg-card p-6 shadow-sm">
+                    <div className="space-y-4 rounded-lg border bg-card p-8 shadow-lg">
                         {error && (
-                            <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+                            <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-800">
                                 {error}
                             </div>
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email address</Label>
+                            <Label htmlFor="email" className="text-sm font-medium">Email address</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -79,11 +79,12 @@ export default function SignupPage() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 placeholder="you@example.com"
+                                className="h-11"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -91,11 +92,13 @@ export default function SignupPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 placeholder="••••••••"
+                                className="h-11"
                             />
+                            <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">Confirm Password</Label>
+                            <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
                             <Input
                                 id="confirmPassword"
                                 type="password"
@@ -103,10 +106,11 @@ export default function SignupPage() {
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                                 placeholder="••••••••"
+                                className="h-11"
                             />
                         </div>
 
-                        <Button type="submit" className="w-full" disabled={loading}>
+                        <Button type="submit" className="w-full h-11 text-base shadow-md hover:shadow-lg transition-all" disabled={loading}>
                             {loading ? "Creating account..." : "Create account"}
                         </Button>
                     </div>

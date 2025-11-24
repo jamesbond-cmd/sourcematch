@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { rfiSchema, type RFIFormData } from "@/lib/validators/rfi"
@@ -19,14 +19,123 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 export function RFIWizard() {
+    const { user, signUp, loading } = useAuth()
+    const router = useRouter()
+
+    // Initialize state from localStorage if available, otherwise default based on auth
     const [currentStep, setCurrentStep] = useState(1)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const { user, signUp } = useAuth()
-    const router = useRouter()
+    const [isLoadingProfile, setIsLoadingProfile] = useState(true)
+    const [isInitialized, setIsInitialized] = useState(false)
+
     const methods = useForm<RFIFormData>({
         resolver: zodResolver(rfiSchema),
         mode: "onChange",
     })
+
+    // Handle initialization and persistence
+    useEffect(() => {
+        if (loading) return
+
+        const savedStep = localStorage.getItem("rfi_wizard_step")
+        const savedData = localStorage.getItem("rfi_wizard_data")
+
+        // Determine correct starting step
+        let step = 1
+        if (savedStep) {
+            step = parseInt(savedStep)
+        } else if (user) {
+            step = 3
+        }
+
+        // Ensure logged-in users don't see steps 1-2
+        if (user && step < 3) {
+            step = 3
+        }
+
+        setCurrentStep(step)
+
+        // Restore form data
+        if (savedData) {
+            try {
+                const parsedData = JSON.parse(savedData)
+                if (parsedData) {
+                    Object.keys(parsedData).forEach((key) => {
+                        const fieldKey = key as keyof RFIFormData
+                        const currentValue = methods.getValues(fieldKey)
+                        if (!currentValue || currentValue === "") {
+                            methods.setValue(fieldKey, parsedData[key])
+                        }
+                    })
+                }
+            } catch (e) {
+                console.error("Failed to parse saved wizard data", e)
+            }
+        }
+
+        setIsInitialized(true)
+
+        // If user is logged in, fetch profile data
+        if (user) {
+            setIsLoadingProfile(true)
+            const loadUserData = async () => {
+                try {
+                    // Fetch user profile
+                    const profile = await supabaseClient.getProfile(user.id)
+
+                    if (profile) {
+                        // Pre-populate form with user data
+                        const [firstName, ...lastNameParts] = (profile.full_name || '').split(' ')
+                        methods.setValue('firstName', firstName || '')
+                        methods.setValue('lastName', lastNameParts.join(' ') || '')
+                        methods.setValue('workEmail', profile.email || user.email || '')
+
+                        // Fetch company data if user has a company
+                        if (profile.company_id) {
+                            const { data: company } = await supabaseClient.supabase
+                                .from('companies')
+                                .select('*')
+                                .eq('id', profile.company_id)
+                                .single()
+
+                            if (company) {
+                                methods.setValue('companyName', company.name || '')
+                                methods.setValue('companyWebsite', company.website || '')
+                                methods.setValue('country', company.country || '')
+                            }
+                        }
+                    }
+                } catch (error) { // Changed from profileError to error
+                    console.log('No profile found for user, will create on RFI submission')
+                    if (user.email) {
+                        methods.setValue('workEmail', user.email)
+                    }
+                } finally {
+                    setIsLoadingProfile(false)
+                }
+            }
+            loadUserData()
+        } else {
+            setIsLoadingProfile(false)
+        }
+    }, [loading, user, methods])
+
+    // Save step to localStorage
+    useEffect(() => {
+        if (isInitialized) {
+            localStorage.setItem("rfi_wizard_step", currentStep.toString())
+        }
+    }, [currentStep, isInitialized])
+
+    // Save form data to localStorage
+    useEffect(() => {
+        if (isInitialized) {
+            const subscription = methods.watch((value) => {
+                localStorage.setItem("rfi_wizard_data", JSON.stringify(value))
+            })
+            return () => subscription.unsubscribe()
+        }
+    }, [methods, isInitialized])
 
     const nextStep = async () => {
         // Validate current step fields before moving
@@ -62,7 +171,9 @@ export function RFIWizard() {
     }
 
     const prevStep = () => {
-        if (currentStep > 1) {
+        // Don't go back past step 3 if user is logged in
+        const minStep = user ? 3 : 1
+        if (currentStep > minStep) {
             setCurrentStep((prev) => prev - 1)
         }
     }
@@ -70,13 +181,14 @@ export function RFIWizard() {
     const onSubmit = async (data: RFIFormData) => {
         setIsSubmitting(true)
         try {
-            // Step 1: Create user account if not logged in
+            // Step 1: Get or create user account
             let userId = user?.id
             if (!userId) {
+                if (!data.password) {
+                    throw new Error("Password is required for new account creation")
+                }
                 await signUp(data.workEmail, data.password, {
-                    first_name: data.firstName,
-                    last_name: data.lastName,
-                    phone: data.phone,
+                    full_name: `${data.firstName} ${data.lastName}`,
                 })
                 // Get the newly created user
                 const { createClient } = await import("@/lib/supabase/client")
@@ -87,25 +199,47 @@ export function RFIWizard() {
 
             if (!userId) throw new Error("Failed to create user account")
 
-            // Step 2: Create company
-            const company = await supabaseClient.createCompany({
-                name: data.companyName,
-                website: data.companyWebsite,
-                country: data.country,
-            })
+            // Step 2: Get or create company
+            let companyId: string | undefined
 
-            // Step 3: Create or update profile
-            await supabaseClient.createProfile({
-                id: userId,
-                email: data.workEmail,
-                full_name: `${data.firstName} ${data.lastName}`,
-                role: "buyer",
-                company_id: company.id,
-            })
+            if (user) {
+                // User is logged in, fetch their profile to get company_id
+                const profile = await supabaseClient.getProfile(userId)
+                companyId = profile?.company_id || undefined
+            }
+
+            // Create company if user doesn't have one
+            if (!companyId) {
+                const company = await supabaseClient.createCompany({
+                    name: data.companyName,
+                    website: data.companyWebsite,
+                    country: data.country,
+                })
+                companyId = company.id
+
+                // Update profile with company_id if user already exists
+                if (user) {
+                    await supabaseClient.supabase
+                        .from('profiles')
+                        .update({ company_id: companyId })
+                        .eq('id', userId)
+                }
+            }
+
+            // Step 3: Create or update profile (only for new users, existing users already have profile via trigger)
+            if (!user) {
+                await supabaseClient.createProfile({
+                    id: userId,
+                    email: data.workEmail,
+                    full_name: `${data.firstName} ${data.lastName}`,
+                    role: "buyer",
+                    company_id: companyId,
+                })
+            }
 
             // Step 4: Create RFI
             await supabaseClient.createRFI({
-                company_id: company.id,
+                company_id: companyId!,
                 created_by: userId,
                 product_name: data.productName,
                 requirements: data.requirements,
@@ -115,13 +249,14 @@ export function RFIWizard() {
                 destination_markets: data.destinationMarkets,
                 status: "submitted",
                 ai_status: "pending",
-                // Additional fields that might be in the form but not in the interface strict definition
-                // can be added if the interface allows [key: string]: any
                 product_description: data.productDescription,
                 volume_unit: data.volumeUnit,
             })
 
             toast.success("RFI submitted successfully!")
+            // Clear saved data
+            localStorage.removeItem("rfi_wizard_data")
+            localStorage.removeItem("rfi_wizard_step")
             // Success! Move to dashboard
             setCurrentStep(7)
         } catch (error) {
@@ -137,47 +272,86 @@ export function RFIWizard() {
         return <Step7Dashboard />
     }
 
-    return (
-        <div className="mx-auto max-w-3xl py-12">
-            <div className="mb-8">
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>Step {currentStep} of 6</span>
-                    <span>{Math.round((currentStep / 6) * 100)}% completed</span>
+    // Show loading state while initializing or fetching profile data
+    if (!isInitialized || loading || (user && isLoadingProfile)) {
+        return (
+            <div className="mx-auto max-w-3xl py-12 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">Loading...</p>
                 </div>
-                <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-secondary">
+            </div>
+        )
+    }
+
+    // Calculate step numbers for display (logged-in users skip steps 1-2)
+    const totalSteps = user ? 4 : 6 // Steps 3-6 for logged in, 1-6 for new users
+    const displayStep = user ? currentStep - 2 : currentStep // Adjust display for logged-in users
+    const progressPercent = (displayStep / totalSteps) * 100
+
+    return (
+        <div className="mx-auto max-w-3xl py-12 px-4">
+            {/* Progress Section */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between mb-3">
+                    <div>
+                        <h2 className="text-2xl font-bold">Submit an RFI</h2>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Step {displayStep} of {totalSteps}
+                        </p>
+                    </div>
+                    <div className="text-right">
+                        <div className="text-2xl font-bold text-primary">{Math.round(progressPercent)}%</div>
+                        <p className="text-xs text-muted-foreground">Complete</p>
+                    </div>
+                </div>
+                <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary">
                     <div
-                        className="h-full bg-primary transition-all duration-300 ease-in-out"
-                        style={{ width: `${(currentStep / 6) * 100}%` }}
+                        className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 ease-out shadow-sm"
+                        style={{ width: `${progressPercent}%` }}
                     />
                 </div>
             </div>
 
-            <Card className="p-6 md:p-8">
+            {/* Form Card */}
+            <Card className="p-8 md:p-10 shadow-lg border-2">
                 <FormProvider {...methods}>
                     <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
-                        {currentStep === 1 && <Step1CompanyDetails />}
-                        {currentStep === 2 && <Step2AccountCreation />}
+                        {!user && currentStep === 1 && <Step1CompanyDetails />}
+                        {!user && currentStep === 2 && <Step2AccountCreation />}
                         {currentStep === 3 && <Step3ProductOverview />}
                         {currentStep === 4 && <Step4Requirements />}
                         {currentStep === 5 && <Step5Volumes />}
                         {currentStep === 6 && <Step6Review />}
 
-                        <div className="flex justify-between pt-4">
+                        <div className="flex justify-between pt-6 border-t">
                             <Button
                                 type="button"
                                 variant="outline"
                                 onClick={prevStep}
-                                disabled={currentStep === 1}
-                                className={currentStep === 1 ? "invisible" : ""}
+                                disabled={currentStep === (user ? 3 : 1)}
+                                className={`${currentStep === (user ? 3 : 1) ? "invisible" : ""} h-11 px-6`}
                             >
-                                Back
+                                ← Back
                             </Button>
                             <Button
                                 type="button"
                                 onClick={currentStep === 6 ? methods.handleSubmit(onSubmit) : nextStep}
                                 disabled={isSubmitting}
+                                className="h-11 px-8 shadow-md hover:shadow-lg transition-all"
                             >
-                                {currentStep === 6 ? (isSubmitting ? "Submitting..." : "Submit RFI") : "Continue"}
+                                {currentStep === 6 ? (
+                                    isSubmitting ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                                            Submitting...
+                                        </>
+                                    ) : (
+                                        "Submit RFI →"
+                                    )
+                                ) : (
+                                    "Continue →"
+                                )}
                             </Button>
                         </div>
                     </form>

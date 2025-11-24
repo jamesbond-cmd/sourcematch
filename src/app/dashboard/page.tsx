@@ -9,6 +9,13 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { Plus, Search, Filter, LogOut } from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function DashboardPage() {
     const { user, loading, signOut } = useAuth()
@@ -16,6 +23,7 @@ export default function DashboardPage() {
     const [rfis, setRfis] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState("")
+    const [filterStatus, setFilterStatus] = useState("all")
 
     useEffect(() => {
         if (!loading && !user) {
@@ -46,9 +54,11 @@ export default function DashboardPage() {
         router.push("/")
     }
 
-    const filteredRFIs = rfis.filter(rfi =>
-        rfi.product_name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    const filteredRFIs = rfis.filter(rfi => {
+        const matchesSearch = rfi.product_name.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesStatus = filterStatus === "all" || rfi.status === filterStatus
+        return matchesSearch && matchesStatus
+    })
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -120,24 +130,52 @@ export default function DashboardPage() {
                             className="pl-10"
                         />
                     </div>
-                    <Button variant="outline">
-                        <Filter className="h-4 w-4 mr-2" />
-                        Filter
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <Filter className="h-4 w-4 mr-2" />
+                                {filterStatus === "all" ? "Filter Status" : filterStatus.replace("_", " ")}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setFilterStatus("all")}>
+                                All Statuses
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setFilterStatus("draft")}>
+                                Draft
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFilterStatus("submitted")}>
+                                Submitted
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFilterStatus("in_review")}>
+                                In Review
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFilterStatus("sent_to_suppliers")}>
+                                Sent to Suppliers
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFilterStatus("closed")}>
+                                Closed
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 {/* RFI List */}
                 {filteredRFIs.length === 0 ? (
-                    <Card className="p-12 text-center">
+                    <Card className="p-16 text-center border-2 border-dashed">
                         <div className="mx-auto max-w-md">
-                            <h3 className="text-lg font-semibold mb-2">No RFIs yet</h3>
-                            <p className="text-muted-foreground mb-6">
-                                Get started by creating your first sourcing request
+                            <div className="mx-auto w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                                <Plus className="h-12 w-12 text-primary" />
+                            </div>
+                            <h3 className="text-2xl font-bold mb-2">No RFIs yet</h3>
+                            <p className="text-muted-foreground mb-8 text-lg">
+                                Get started by creating your first sourcing request and connect with qualified suppliers
                             </p>
-                            <Button asChild>
+                            <Button size="lg" className="shadow-md hover:shadow-lg transition-all" asChild>
                                 <Link href="/rfi">
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Create RFI
+                                    <Plus className="h-5 w-5 mr-2" />
+                                    Create Your First RFI
                                 </Link>
                             </Button>
                         </div>
@@ -145,30 +183,35 @@ export default function DashboardPage() {
                 ) : (
                     <div className="grid gap-4">
                         {filteredRFIs.map((rfi) => (
-                            <Card key={rfi.id} className="p-6 hover:shadow-md transition-shadow">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-lg font-semibold">{rfi.product_name}</h3>
-                                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(rfi.status)}`}>
-                                                {rfi.status.replace("_", " ")}
-                                            </span>
+                            <Card key={rfi.id} className="p-6 hover:shadow-lg hover:border-primary/50 transition-all duration-200 border-2">
+                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                    <div className="flex-1 space-y-3">
+                                        <div className="flex items-start gap-3">
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-bold mb-1">{rfi.product_name}</h3>
+                                                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(rfi.status)}`}>
+                                                    {rfi.status.replace("_", " ").toUpperCase()}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                                            <div>
-                                                <span className="font-medium">Volume:</span> {rfi.estimated_volume} {rfi.volume_unit}
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                                            <div className="flex flex-col">
+                                                <span className="text-muted-foreground text-xs font-medium mb-1">Volume</span>
+                                                <span className="font-semibold">{rfi.estimated_volume} {rfi.volume_unit}</span>
                                             </div>
-                                            <div>
-                                                <span className="font-medium">Timeline:</span> {rfi.timeline}
+                                            <div className="flex flex-col">
+                                                <span className="text-muted-foreground text-xs font-medium mb-1">Timeline</span>
+                                                <span className="font-semibold">{rfi.timeline}</span>
                                             </div>
-                                            <div className="col-span-2">
-                                                <span className="font-medium">Markets:</span> {rfi.destination_markets?.join(", ")}
+                                            <div className="flex flex-col">
+                                                <span className="text-muted-foreground text-xs font-medium mb-1">Markets</span>
+                                                <span className="font-semibold">{rfi.destination_markets?.join(", ")}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <Button variant="outline" asChild>
-                                            <Link href={`/rfi/${rfi.id}`}>View Details</Link>
+                                    <div className="flex gap-2 sm:flex-col sm:items-end">
+                                        <Button variant="default" size="sm" className="shadow-sm" asChild>
+                                            <Link href={`/rfi/${rfi.id}`}>View Details →</Link>
                                         </Button>
                                     </div>
                                 </div>

@@ -7,7 +7,7 @@ import { supabaseClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Calendar, MapPin, Package, Clock, FileText, MessageSquare } from "lucide-react"
+import { ArrowLeft, Calendar, MapPin, Package, Clock, FileText, MessageSquare, Edit } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { ChatInterface } from "@/components/chat/ChatInterface"
@@ -38,6 +38,7 @@ interface RFI extends BaseRFI {
     guidance_price: string
     attachments: Attachment[]
     companies: { name: string }
+    created_by: string
 }
 
 export default function RFIDetailsPage() {
@@ -107,7 +108,15 @@ export default function RFIDetailsPage() {
                             <span>Created {new Date(rfi.created_at).toLocaleDateString()}</span>
                         </div>
                     </div>
-                    <div className="ml-auto">
+                    <div className="ml-auto flex items-center gap-2">
+                        {user && rfi.created_by === user.id && (
+                            <Button variant="outline" size="sm" asChild>
+                                <Link href={`/rfi/${id}/edit`}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit RFI
+                                </Link>
+                            </Button>
+                        )}
                         <Badge variant={rfi.status === "submitted" ? "default" : "secondary"} className="capitalize">
                             {rfi.status.replace("_", " ")}
                         </Badge>

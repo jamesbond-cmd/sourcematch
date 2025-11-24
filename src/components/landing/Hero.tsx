@@ -4,31 +4,36 @@ import { ArrowRight, CheckCircle2, Search, ShoppingCart } from "lucide-react"
 
 export function Hero() {
     return (
-        <section className="relative overflow-hidden bg-background pt-16 md:pt-20 lg:pt-24">
+        <section className="relative overflow-hidden bg-gradient-to-b from-background to-muted/30 pt-16 md:pt-20 lg:pt-24">
             <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid gap-12 lg:grid-cols-2 lg:gap-8">
                     <div className="flex flex-col justify-center space-y-8">
-                        <div className="space-y-4">
-                            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl xl:text-6xl">
-                                Find the right food and beverage supplier without guesswork
+                        <div className="space-y-6">
+                            <div className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+                                Trusted by 100+ food & beverage brands
+                            </div>
+                            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl xl:text-6xl leading-tight">
+                                Find the right food and beverage supplier{" "}
+                                <span className="text-primary">without guesswork</span>
                             </h1>
-                            <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl">
+                            <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl leading-relaxed">
                                 Post one RFI and let us source qualified manufacturers, compare quotes, and guide you to the best option for your brand.
                             </p>
                         </div>
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            <Button size="lg" className="w-full sm:w-auto" asChild>
+                        <div className="flex flex-col gap-4 sm:flex-row">
+                            <Button size="lg" className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all text-base px-8" asChild>
                                 <Link href="/rfi">
-                                    Submit an RFI <ArrowRight className="ml-2 h-4 w-4" />
+                                    Submit an RFI <ArrowRight className="ml-2 h-5 w-5" />
                                 </Link>
                             </Button>
-                            <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                            <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 hover:bg-muted">
                                 Talk to a sourcing specialist
                             </Button>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                            Free to submit. No obligation to buy.
-                        </p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <span>Free to submit. No obligation to buy.</span>
+                        </div>
                     </div>
                     <div className="relative hidden lg:block">
                         {/* Simple UI mock of RFI card or "matching in progress" */}
