@@ -6,20 +6,27 @@ import { type RFIFormData } from "@/lib/validators/rfi"
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 
-export function Step4Requirements() {
+interface Step4RequirementsProps {
+    selectedFiles?: File[]
+    onFilesChange?: (files: File[]) => void
+}
+
+export function Step4Requirements({ selectedFiles = [], onFilesChange }: Step4RequirementsProps) {
     const { register, formState: { errors } } = useFormContext<RFIFormData>()
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+    // const [selectedFiles, setSelectedFiles] = useState<File[]>([]) // Removed local state
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
+        if (e.target.files && onFilesChange) {
             const newFiles = Array.from(e.target.files)
-            setSelectedFiles(prev => [...prev, ...newFiles])
+            onFilesChange([...selectedFiles, ...newFiles])
         }
     }
 
     const handleRemoveFile = (index: number) => {
-        setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+        if (onFilesChange) {
+            onFilesChange(selectedFiles.filter((_, i) => i !== index))
+        }
     }
 
     const handleUploadClick = () => {

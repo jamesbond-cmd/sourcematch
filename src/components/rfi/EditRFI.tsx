@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { rfiSchema, type RFIFormData } from "@/lib/validators/rfi"
+import { editRfiSchema, type EditRFIFormData } from "@/lib/validators/rfi"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -26,7 +26,7 @@ export function EditRFI({ rfi }: EditRFIProps) {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     // Map RFI data to form data
-    const defaultValues: Partial<RFIFormData> = {
+    const defaultValues: Partial<EditRFIFormData> = {
         productName: rfi.product_name,
         productDescription: rfi.product_description || "",
         requirements: rfi.requirements,
@@ -35,23 +35,20 @@ export function EditRFI({ rfi }: EditRFIProps) {
         timeline: rfi.timeline,
         destinationMarkets: rfi.destination_markets || [],
         guidancePrice: rfi.target_price || "",
-        // Company/User details are not editable here usually, but we keep them for schema validity
-        companyName: rfi.companies?.name || "",
-        firstName: rfi.profiles?.full_name?.split(" ")[0] || "",
-        lastName: rfi.profiles?.full_name?.split(" ").slice(1).join(" ") || "",
-        workEmail: rfi.profiles?.email || "",
-        // Technical fields
-        password: "", // Not needed for edit
-        termsAccepted: true,
-        rfiConfirmed: true,
     }
 
-    const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<RFIFormData>({
-        resolver: zodResolver(rfiSchema),
+    const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<EditRFIFormData>({
+        resolver: zodResolver(editRfiSchema),
         defaultValues,
     })
 
-    const onSubmit = async (data: RFIFormData) => {
+    // Watch fields for controlled inputs
+    const watchedVolumeUnit = watch("volumeUnit")
+    const watchedTimeline = watch("timeline")
+
+    const onSubmit = async (data: EditRFIFormData) => {
+        console.log("=== EDIT RFI SUBMISSION STARTED ===")
+        console.log("Form data:", data)
         setIsSubmitting(true)
         try {
             await supabaseClient.updateRFI(rfi.id, {
@@ -73,7 +70,13 @@ export function EditRFI({ rfi }: EditRFIProps) {
             toast.error("Failed to update RFI")
         } finally {
             setIsSubmitting(false)
+            console.log("=== EDIT RFI SUBMISSION ENDED ===")
         }
+    }
+
+    const onInvalid = (errors: any) => {
+        console.error("Form validation failed:", errors)
+        toast.error("Please check the form for errors")
     }
 
     const markets = ["USA", "Canada", "UK", "EU", "Australia", "Japan", "China", "Other"]
@@ -101,7 +104,7 @@ export function EditRFI({ rfi }: EditRFIProps) {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-8">
                 {/* Product Overview */}
                 <Card className="p-6 space-y-6">
                     <h2 className="text-xl font-semibold">Product Overview</h2>
@@ -156,8 +159,8 @@ export function EditRFI({ rfi }: EditRFIProps) {
                         <div className="grid gap-2">
                             <Label htmlFor="volumeUnit">Unit</Label>
                             <Select
-                                onValueChange={(value: string) => setValue("volumeUnit", value)}
-                                defaultValue={rfi.volume_unit}
+                                onValueChange={(value: string) => setValue("volumeUnit", value, { shouldValidate: true })}
+                                value={watchedVolumeUnit}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select unit" />
@@ -166,7 +169,7 @@ export function EditRFI({ rfi }: EditRFIProps) {
                                     <SelectItem value="units">Units</SelectItem>
                                     <SelectItem value="kg">Kilograms (kg)</SelectItem>
                                     <SelectItem value="mt">Metric Tonnes (MT)</SelectItem>
-                                    <SelectItem value="l">Liters (L)</SelectItem>
+                                    <SelectItem value="liters">Liters (L)</SelectItem>
                                     <SelectItem value="pallets">Pallets</SelectItem>
                                     <SelectItem value="containers">Containers (20ft/40ft)</SelectItem>
                                 </SelectContent>
@@ -178,21 +181,14 @@ export function EditRFI({ rfi }: EditRFIProps) {
 
                         <div className="grid gap-2">
                             <Label htmlFor="timeline">Target Timeline</Label>
-                            <Select
-                                onValueChange={(value: string) => setValue("timeline", value)}
-                                defaultValue={rfi.timeline}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select timeline" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="immediate">Immediate (Urgent)</SelectItem>
-                                    <SelectItem value="1-3_months">1-3 Months</SelectItem>
-                                    <SelectItem value="3-6_months">3-6 Months</SelectItem>
-                                    <SelectItem value="6+_months">6+ Months</SelectItem>
-                                    <SelectItem value="exploratory">Just Exploring</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                id="timeline"
+                                {...register("timeline")}
+                                placeholder="e.g. 3-6 months, ASAP"
+                            />
+                            {errors.timeline && (
+                                <p className="text-sm text-red-500">{errors.timeline.message}</p>
+                            )}
                         </div>
 
                         <div className="grid gap-2">
@@ -204,7 +200,11 @@ export function EditRFI({ rfi }: EditRFIProps) {
                     <div className="space-y-3">
                         <Label>Destination Markets</Label>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {markets.map((market) => (
+                            {[
+                                "United Kingdom", "Germany", "France", "Spain", "Italy",
+                                "Netherlands", "Poland", "USA", "Canada", "UAE",
+                                "Australia", "Japan", "China", "Other"
+                            ].map((market) => (
                                 <div key={market} className="flex items-center space-x-2">
                                     <Checkbox
                                         id={`market-${market}`}

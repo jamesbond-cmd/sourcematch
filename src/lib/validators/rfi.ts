@@ -5,9 +5,9 @@ export const rfiSchema = z.object({
     companyName: z.string().min(1, "Company name is required"),
     companyWebsite: z.string().url("Please enter a valid company website"),
     firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
+    lastName: z.string().optional(),
     workEmail: z.string().email("Please enter a valid work email"),
-    phone: z.string().min(1, "Phone number is required"),
+    phone: z.string().optional(),
     country: z.string().min(1, "Country is required"),
 
     // Step 2: Account Creation (Optional for logged in users)
@@ -39,4 +39,18 @@ export const rfiSchema = z.object({
     }),
 })
 
+export const editRfiSchema = rfiSchema.pick({
+    productName: true,
+    productDescription: true,
+    requirements: true,
+    estimatedVolume: true,
+    volumeUnit: true,
+    targetAnnualVolume: true,
+    destinationMarkets: true,
+    guidancePrice: true,
+    budgetType: true,
+    timeline: true,
+})
+
 export type RFIFormData = z.infer<typeof rfiSchema>
+export type EditRFIFormData = z.infer<typeof editRfiSchema>

@@ -28,6 +28,7 @@ export function RFIWizard() {
     const [isLoadingProfile, setIsLoadingProfile] = useState(true)
     const [isInitialized, setIsInitialized] = useState(false)
     const [hasCompany, setHasCompany] = useState(false) // Track if user has a company
+    const [files, setFiles] = useState<File[]>([]) // Track selected files
 
     const methods = useForm<RFIFormData>({
         resolver: zodResolver(rfiSchema),
@@ -66,13 +67,18 @@ export function RFIWizard() {
                 try {
                     // Fetch user profile
                     const profile = await supabaseClient.getProfile(user.id)
+                    console.log("Loaded profile:", profile)
 
                     if (profile) {
                         // Pre-populate form with user data
-                        const [firstName, ...lastNameParts] = (profile.full_name || '').split(' ')
-                        methods.setValue('firstName', firstName || '')
+                        const fullName = profile.full_name || user.email?.split('@')[0] || ''
+                        const [firstName, ...lastNameParts] = fullName.split(' ')
+
+                        methods.setValue('firstName', firstName || 'User')
                         methods.setValue('lastName', lastNameParts.join(' ') || '')
                         methods.setValue('workEmail', profile.email || user.email || '')
+
+                        console.log("Set form values - firstName:", firstName, "lastName:", lastNameParts.join(' '))
 
                         // Fetch company data if user has a company
                         if (profile.company_id) {
@@ -94,6 +100,9 @@ export function RFIWizard() {
                     console.log('No profile found for user, will create on RFI submission')
                     if (user.email) {
                         methods.setValue('workEmail', user.email)
+                        // Set basic name from email
+                        const emailName = user.email.split('@')[0]
+                        methods.setValue('firstName', emailName)
                     }
                 } finally {
                     setIsLoadingProfile(false)
@@ -294,6 +303,39 @@ export function RFIWizard() {
             const createdRFI = await supabaseClient.createRFI(rfiData)
             console.log("RFI created successfully:", createdRFI)
 
+            // Step 5: Upload attachments if any
+            if (files.length > 0 && createdRFI.id) {
+                console.log(`Uploading ${files.length} files...`)
+
+                for (const file of files) {
+                    try {
+                        const fileExt = file.name.split('.').pop()
+                        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+                        const filePath = `${createdRFI.id}/${fileName}`
+
+                        // Upload file to storage
+                        await supabaseClient.uploadFile("rfi-attachments", filePath, file)
+
+                        // Get public URL
+                        const publicUrl = await supabaseClient.getFileUrl("rfi-attachments", filePath)
+
+                        // Create attachment record
+                        await supabaseClient.createAttachment({
+                            rfi_id: createdRFI.id,
+                            file_name: file.name,
+                            file_path: filePath,
+                            file_size: file.size,
+                            file_type: file.type,
+                            file_url: publicUrl
+                        })
+                        console.log(`Uploaded ${file.name}`)
+                    } catch (uploadError) {
+                        console.error(`Failed to upload file ${file.name}:`, uploadError)
+                        // Continue with other files even if one fails
+                    }
+                }
+            }
+
             toast.success("RFI submitted successfully!")
             // Clear saved data
             localStorage.removeItem("rfi_wizard_data")
@@ -323,6 +365,7 @@ export function RFIWizard() {
         // Reset state
         setCurrentStep(hasCompany ? 1 : 1) // Will be recalculated in useEffect
         setIsSubmitting(false)
+        setFiles([]) // Clear files
 
         // Trigger re-initialization
         setIsInitialized(false)
@@ -390,7 +433,7 @@ export function RFIWizard() {
                                 {currentStep === 1 && <Step1CompanyDetails />}
                                 {currentStep === 2 && <Step2AccountCreation />}
                                 {currentStep === 3 && <Step3ProductOverview />}
-                                {currentStep === 4 && <Step4Requirements />}
+                                {currentStep === 4 && <Step4Requirements selectedFiles={files} onFilesChange={setFiles} />}
                                 {currentStep === 5 && <Step5Volumes />}
                                 {currentStep === 6 && <Step6Review />}
                             </>
@@ -398,7 +441,7 @@ export function RFIWizard() {
                         {user && hasCompany && (
                             <>
                                 {currentStep === 1 && <Step3ProductOverview />}
-                                {currentStep === 2 && <Step4Requirements />}
+                                {currentStep === 2 && <Step4Requirements selectedFiles={files} onFilesChange={setFiles} />}
                                 {currentStep === 3 && <Step5Volumes />}
                                 {currentStep === 4 && <Step6Review />}
                             </>
@@ -407,7 +450,7 @@ export function RFIWizard() {
                             <>
                                 {currentStep === 1 && <Step1CompanyDetails />}
                                 {currentStep === 2 && <Step3ProductOverview />}
-                                {currentStep === 3 && <Step4Requirements />}
+                                {currentStep === 3 && <Step4Requirements selectedFiles={files} onFilesChange={setFiles} />}
                                 {currentStep === 4 && <Step5Volumes />}
                                 {currentStep === 5 && <Step6Review />}
                             </>
@@ -425,7 +468,29 @@ export function RFIWizard() {
                             </Button>
                             <Button
                                 type="button"
-                                onClick={currentStep === getStepMapping().maxStep ? methods.handleSubmit(onSubmit) : nextStep}
+                                onClick={() => {
+                                    console.log("=== SUBMIT BUTTON CLICKED ===")
+                                    console.log("Current step:", currentStep)
+                                    console.log("Max step:", getStepMapping().maxStep)
+                                    console.log("Is submitting:", isSubmitting)
+                                    console.log("Form errors:", methods.formState.errors)
+                                    console.log("Form values:", methods.getValues())
+
+                                    if (currentStep === getStepMapping().maxStep) {
+                                        console.log("Calling handleSubmit...")
+                                        methods.handleSubmit(
+                                            (data) => {
+                                                console.log("Form validation passed, calling onSubmit")
+                                                onSubmit(data)
+                                            },
+                                            (errors) => {
+                                                console.error("Form validation FAILED:", errors)
+                                            }
+                                        )()
+                                    } else {
+                                        nextStep()
+                                    }
+                                }}
                                 disabled={isSubmitting}
                                 className="h-11 px-8 shadow-md hover:shadow-lg transition-all"
                             >
