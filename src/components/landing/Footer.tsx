@@ -17,8 +17,6 @@ export function Footer() {
                         <h3 className="font-semibold mb-4">Platform</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/how-it-works" className="hover:text-primary">How it Works</Link></li>
-                            <li><Link href="/pricing" className="hover:text-primary">Pricing</Link></li>
-                            <li><Link href="/suppliers" className="hover:text-primary">For Suppliers</Link></li>
                             <li><Link href="/buyers" className="hover:text-primary">For Buyers</Link></li>
                         </ul>
                     </div>
@@ -27,7 +25,6 @@ export function Footer() {
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="/about" className="hover:text-primary">About Us</Link></li>
                             <li><Link href="/careers" className="hover:text-primary">Careers</Link></li>
-                            <li><Link href="/blog" className="hover:text-primary">Batch Sourcing Blog</Link></li>
                             <li><Link href="/contact" className="hover:text-primary">Contact</Link></li>
                         </ul>
                     </div>
@@ -35,12 +32,12 @@ export function Footer() {
                         <h3 className="mb-4 text-sm font-semibold">Legal</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li>
-                                <Link href="#" className="hover:text-foreground">
+                                <Link href="/terms" className="hover:text-foreground">
                                     Terms of Service
                                 </Link>
                             </li>
                             <li>
-                                <Link href="#" className="hover:text-foreground">
+                                <Link href="/privacy" className="hover:text-foreground">
                                     Privacy Policy
                                 </Link>
                             </li>
