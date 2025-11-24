@@ -39,7 +39,6 @@ export default defineType({
                     name: 'alt',
                     type: 'string',
                     title: 'Alternative text',
-                    description: 'Important for SEO and accessibility.',
                 },
             ],
         }),
@@ -60,32 +59,11 @@ export default defineType({
             title: 'Excerpt',
             type: 'text',
             rows: 4,
-            description: 'Short description for preview cards',
         }),
         defineField({
             name: 'body',
             title: 'Body',
             type: 'blockContent',
-        }),
-        defineField({
-            name: 'seo',
-            title: 'SEO',
-            type: 'object',
-            fields: [
-                {
-                    name: 'metaTitle',
-                    title: 'Meta Title',
-                    type: 'string',
-                    description: 'Title for search engines (max 60 characters)',
-                },
-                {
-                    name: 'metaDescription',
-                    title: 'Meta Description',
-                    type: 'text',
-                    rows: 3,
-                    description: 'Description for search engines (max 160 characters)',
-                },
-            ],
         }),
     ],
     preview: {
