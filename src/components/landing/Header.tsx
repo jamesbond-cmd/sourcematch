@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X, User, LogOut } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import {
@@ -15,11 +15,21 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { cn } from "@/lib/utils"
 
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
     const { user, signOut } = useAuth()
     const router = useRouter()
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20)
+        }
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, [])
 
     const handleSignOut = async () => {
         await signOut()
@@ -34,26 +44,36 @@ export function Header() {
     }
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex h-16 items-center justify-between">
+        <header
+            className={cn(
+                "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out px-4 sm:px-6 lg:px-8 py-4",
+                scrolled ? "py-2" : "py-4"
+            )}
+        >
+            <div
+                className={cn(
+                    "mx-auto max-w-7xl rounded-full border border-transparent transition-all duration-300",
+                    scrolled ? "bg-background/60 backdrop-blur-md border-white/10 shadow-lg" : ""
+                )}
+            >
+                <div className="flex h-14 items-center justify-between px-4 sm:px-6">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                            <span className="text-primary-foreground font-bold">B</span>
+                    <Link href="/" className="flex items-center gap-2 group">
+                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center group-hover:glow transition-all duration-300">
+                            <span className="text-primary-foreground font-bold font-heading">B</span>
                         </div>
-                        <span className="text-xl font-bold">Batch Sourcing</span>
+                        <span className="text-xl font-bold font-heading tracking-tight">Batch Sourcing</span>
                     </Link>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
-                        <Link href="/#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <Link href="/#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:scale-105 transform duration-200">
                             How it works
                         </Link>
-                        <Link href="/#categories" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <Link href="/#categories" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:scale-105 transform duration-200">
                             Categories
                         </Link>
-                        <Link href="/#faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <Link href="/#faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:scale-105 transform duration-200">
                             FAQ
                         </Link>
                     </nav>
@@ -62,20 +82,20 @@ export function Header() {
                     <div className="hidden md:flex items-center space-x-4">
                         {user ? (
                             <>
-                                <Button variant="ghost" asChild>
+                                <Button variant="ghost" asChild className="hover:bg-white/5">
                                     <Link href="/dashboard">Dashboard</Link>
                                 </Button>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                                            <Avatar className="h-10 w-10">
+                                        <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-white/5">
+                                            <Avatar className="h-10 w-10 border border-white/10">
                                                 <AvatarFallback className="bg-primary text-primary-foreground">
                                                     {getUserInitials()}
                                                 </AvatarFallback>
                                             </Avatar>
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-56 bg-background border shadow-lg" align="end" forceMount>
+                                    <DropdownMenuContent className="w-56 bg-background/95 backdrop-blur-xl border-white/10 shadow-xl" align="end" forceMount>
                                         <DropdownMenuLabel className="font-normal">
                                             <div className="flex flex-col space-y-1">
                                                 <p className="text-sm font-medium leading-none">My Account</p>
@@ -84,21 +104,21 @@ export function Header() {
                                                 </p>
                                             </div>
                                         </DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem asChild>
+                                        <DropdownMenuSeparator className="bg-white/10" />
+                                        <DropdownMenuItem asChild className="focus:bg-white/10">
                                             <Link href="/dashboard" className="cursor-pointer">
                                                 <User className="mr-2 h-4 w-4" />
                                                 Dashboard
                                             </Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
+                                        <DropdownMenuItem asChild className="focus:bg-white/10">
                                             <Link href="/rfi" className="cursor-pointer">
                                                 <User className="mr-2 h-4 w-4" />
                                                 Create RFI
                                             </Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+                                        <DropdownMenuSeparator className="bg-white/10" />
+                                        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-400 focus:text-red-300 focus:bg-red-900/20">
                                             <LogOut className="mr-2 h-4 w-4" />
                                             Sign out
                                         </DropdownMenuItem>
@@ -107,10 +127,10 @@ export function Header() {
                             </>
                         ) : (
                             <>
-                                <Button variant="ghost" asChild>
+                                <Button variant="ghost" asChild className="hover:bg-white/5">
                                     <Link href="/login">Sign in</Link>
                                 </Button>
-                                <Button asChild>
+                                <Button asChild className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all duration-300">
                                     <Link href="/rfi">Post RFI</Link>
                                 </Button>
                             </>
@@ -119,7 +139,7 @@ export function Header() {
 
                     {/* Mobile Menu Button */}
                     <button
-                        className="md:hidden"
+                        className="md:hidden p-2 rounded-md hover:bg-white/5"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         aria-label="Toggle menu"
                     >
@@ -133,7 +153,7 @@ export function Header() {
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden border-t py-4">
+                    <div className="md:hidden border-t border-white/10 py-4 px-4 bg-background/95 backdrop-blur-xl rounded-b-2xl absolute top-full left-0 right-0 mt-2 mx-4 border shadow-xl">
                         <nav className="flex flex-col space-y-4">
                             <Link
                                 href="/#how-it-works"
@@ -156,29 +176,29 @@ export function Header() {
                             >
                                 FAQ
                             </Link>
-                            <div className="flex flex-col space-y-2 pt-4 border-t">
+                            <div className="flex flex-col space-y-2 pt-4 border-t border-white/10">
                                 {user ? (
                                     <>
                                         <div className="px-2 py-2 text-sm">
                                             <p className="font-medium">Signed in as</p>
                                             <p className="text-xs text-muted-foreground">{user.email}</p>
                                         </div>
-                                        <Button variant="ghost" asChild>
+                                        <Button variant="ghost" asChild className="justify-start hover:bg-white/5">
                                             <Link href="/dashboard">Dashboard</Link>
                                         </Button>
-                                        <Button asChild>
+                                        <Button asChild className="justify-start bg-primary/20 text-primary hover:bg-primary/30">
                                             <Link href="/rfi">Create RFI</Link>
                                         </Button>
-                                        <Button variant="ghost" onClick={handleSignOut} className="text-red-600">
+                                        <Button variant="ghost" onClick={handleSignOut} className="justify-start text-red-400 hover:bg-red-900/20 hover:text-red-300">
                                             Sign out
                                         </Button>
                                     </>
                                 ) : (
                                     <>
-                                        <Button variant="ghost" asChild>
+                                        <Button variant="ghost" asChild className="justify-start hover:bg-white/5">
                                             <Link href="/login">Sign in</Link>
                                         </Button>
-                                        <Button asChild>
+                                        <Button asChild className="justify-start bg-primary hover:bg-primary/90">
                                             <Link href="/rfi">Post RFI</Link>
                                         </Button>
                                     </>
