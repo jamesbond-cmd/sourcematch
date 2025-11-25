@@ -5,7 +5,7 @@ export default function TermsPage() {
     return (
         <div className="min-h-screen bg-background">
             <Header />
-            <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
                 <div className="max-w-4xl mx-auto prose prose-slate dark:prose-invert">
                     <h1>Terms of Service</h1>
                     <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
