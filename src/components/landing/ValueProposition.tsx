@@ -5,7 +5,7 @@ const features = [
     {
         title: "Verified Manufacturers",
         description: "We screen suppliers for certifications, production capacity, and export history.",
-        header: <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100 items-center justify-center"><CheckCircle2 className="h-10 w-10 text-blue-500" /></div>,
+        header: <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-neutral-200 dark:from-neutral-900 dark:to-neutral-800 to-neutral-100 items-center justify-center"><CheckCircle2 className="h-10 w-10 text-indigo-500" /></div>,
         icon: <ShieldCheck className="h-4 w-4 text-neutral-500" />,
         className: "md:col-span-2",
     },

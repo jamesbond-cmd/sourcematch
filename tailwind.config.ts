@@ -12,7 +12,7 @@ const config: Config = {
                 background: "#020817",
                 foreground: "#F8FAFC",
                 primary: {
-                    DEFAULT: "#3B82F6",
+                    DEFAULT: "#4F46E5",
                     foreground: "#FFFFFF",
                 },
                 secondary: {
@@ -33,10 +33,10 @@ const config: Config = {
                 },
                 border: "#1E293B",
                 input: "#1E293B",
-                ring: "#3B82F6",
+                ring: "#4F46E5",
             },
             boxShadow: {
-                glow: "0 0 20px rgba(59, 130, 246, 0.5)",
+                glow: "0 0 20px rgba(79, 70, 229, 0.5)",
             },
             fontFamily: {
                 sans: ["var(--font-jakarta)"],
