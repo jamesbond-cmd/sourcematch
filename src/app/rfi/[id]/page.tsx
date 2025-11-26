@@ -184,12 +184,10 @@ export default function RFIDetailsPage() {
                                         </DialogHeader>
                                         <FileUpload
                                             rfiId={id as string}
-                                            onUploadComplete={() => {
+                                            onUploadComplete={async () => {
                                                 setIsUploadOpen(false)
-                                                // Call loadRFI from the effect to refresh data
-                                                // This will trigger the useEffect again
-                                                setRfi(null) // Clear RFI to show loading state again
-                                                setIsLoading(true)
+                                                // Reload RFI data to show new attachment
+                                                await loadRFI()
                                             }}
                                         />
                                     </DialogContent>
