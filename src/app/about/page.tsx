@@ -3,6 +3,13 @@ import { Footer } from "@/components/landing/Footer"
 import { Card } from "@/components/ui/card"
 import { Target, Lightbulb, Heart } from "lucide-react"
 
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "About Us - Batch Sourcing",
+    description: "Learn about our mission to revolutionize food and beverage sourcing with AI technology.",
+}
+
 export default function AboutPage() {
     return (
         <div className="min-h-screen bg-background">

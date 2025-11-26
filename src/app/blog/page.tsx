@@ -4,6 +4,7 @@ import { PostCard } from "@/components/blog/PostCard"
 import { client } from "@/lib/sanity/client"
 import { postsQuery, categoriesQuery } from "@/lib/sanity/queries"
 import type { Post, Category } from "@/lib/sanity/types"
+import { Metadata } from "next"
 
 export const revalidate = 60 // Revalidate every 60 seconds
 
@@ -25,6 +26,11 @@ async function getCategories(): Promise<Category[]> {
         console.error('Error fetching categories:', error)
         return []
     }
+}
+
+export const metadata: Metadata = {
+    title: "Blog - Batch Sourcing",
+    description: "Insights, tips, and news about food and beverage sourcing, manufacturing trends, and supply chain management.",
 }
 
 export default async function BlogPage() {

@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowRight, FileText, Sparkles, Users } from "lucide-react"
 
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "How It Works - Batch Sourcing",
+    description: "Discover how our AI-driven platform connects you with the perfect food and beverage manufacturers in simple steps.",
+}
+
 export default function HowItWorksPage() {
     return (
         <div className="min-h-screen bg-background">

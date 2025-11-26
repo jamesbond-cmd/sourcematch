@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { CheckCircle2, ArrowRight, TrendingUp, Shield, Clock } from "lucide-react"
 
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "For Buyers - Batch Sourcing",
+    description: "Find reliable manufacturers, manage RFIs, and streamline your sourcing process with our buyer-focused tools.",
+}
+
 export default function BuyersPage() {
     return (
         <div className="min-h-screen bg-background">

@@ -1,6 +1,13 @@
 import { RFIWizard } from "@/components/rfi/RFIWizard"
 import Link from "next/link"
 
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+    title: "Create RFI - Batch Sourcing",
+    description: "Submit your Request for Information (RFI) and let our AI match you with the best suppliers for your needs.",
+}
+
 export default function RFIPage() {
     return (
         <div className="min-h-screen bg-background">
