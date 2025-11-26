@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Logo } from "@/components/ui/logo"
 
 export function Footer() {
     return (
@@ -6,8 +7,8 @@ export function Footer() {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid gap-8 md:grid-cols-4">
                     <div className="space-y-4">
-                        <Link href="/" className="text-xl font-bold">
-                            Batch Sourcing
+                        <Link href="/" className="inline-block">
+                            <Logo />
                         </Link>
                         <p className="text-sm text-muted-foreground">
                             Connecting buyers with the best food and beverage manufacturers.

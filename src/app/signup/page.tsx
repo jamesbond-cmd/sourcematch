@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/AuthContext"
+import { Logo } from "@/components/ui/logo"
 
 export default function SignupPage() {
     const router = useRouter()
@@ -48,10 +49,7 @@ export default function SignupPage() {
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
                     <Link href="/" className="inline-flex items-center gap-2 mb-6">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                            <span className="text-primary-foreground font-bold">B</span>
-                        </div>
-                        <span className="text-xl font-bold">Batch Sourcing</span>
+                        <Logo />
                     </Link>
                     <h2 className="text-2xl font-bold">Create an account</h2>
                     <p className="text-muted-foreground mt-2">Start sourcing smarter today</p>

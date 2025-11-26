@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import { Logo } from "@/components/ui/logo"
 
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -58,11 +59,9 @@ export function Header() {
             >
                 <div className="flex h-14 items-center justify-between px-4 sm:px-6">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center group-hover:glow transition-all duration-300">
-                            <span className="text-primary-foreground font-bold font-heading">B</span>
-                        </div>
-                        <span className="text-xl font-bold font-heading tracking-tight">Batch Sourcing</span>
+                    {/* Logo */}
+                    <Link href="/" className="group">
+                        <Logo />
                     </Link>
 
                     {/* Desktop Navigation */}
