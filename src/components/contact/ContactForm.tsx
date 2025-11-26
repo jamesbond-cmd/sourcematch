@@ -93,8 +93,8 @@ export function ContactForm() {
                         <div>
                             <h3 className="font-semibold mb-1">Phone</h3>
                             <p className="text-sm text-muted-foreground mb-2">Mon-Fri from 8am to 5pm.</p>
-                            <a href="tel:+15550000000" className="text-primary hover:underline">
-                                +1 (555) 000-0000
+                            <a href="tel:+41796960793" className="text-primary hover:underline">
+                                +41 79 696 07 93
                             </a>
                         </div>
                     </div>

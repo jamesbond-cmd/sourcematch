@@ -3,9 +3,11 @@ import { Resend } from 'resend';
 
 export async function POST(request: Request) {
     const apiKey = process.env.RESEND_API_KEY;
+    const contactEmail = process.env.CONTACT_EMAIL || 'hello@batchsourcing.com';
 
     if (!apiKey) {
-        return NextResponse.json({ error: 'Resend API key is not configured' }, { status: 500 });
+        console.error('Resend API key is missing');
+        return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
     const resend = new Resend(apiKey);
@@ -15,7 +17,7 @@ export async function POST(request: Request) {
 
         const { data, error } = await resend.emails.send({
             from: 'Batch Sourcing <onboarding@resend.dev>', // Use verified domain in production
-            to: ['hello@batchsourcing.com'], // Replace with actual recipient
+            to: [contactEmail],
             subject: `New Contact Form Submission: ${subject}`,
             html: `
         <h1>New Contact Form Submission</h1>
@@ -28,11 +30,13 @@ export async function POST(request: Request) {
         });
 
         if (error) {
-            return NextResponse.json({ error }, { status: 500 });
+            console.error('Resend API Error:', error);
+            return NextResponse.json({ error: error.message || 'Failed to send email' }, { status: 500 });
         }
 
         return NextResponse.json({ data });
     } catch (error) {
+        console.error('Internal Contact API Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
