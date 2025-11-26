@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "sonner";
 import { CookieBanner } from "@/components/CookieBanner";
+import { Amplitude } from "@/lib/amplitude";
 
 const outfit = Outfit({
     subsets: ["latin"],
@@ -88,6 +89,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={`${jakarta.variable} ${outfit.variable} font-sans bg-background text-foreground`}>
+                <Amplitude />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

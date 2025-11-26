@@ -17,6 +17,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Logo } from "@/components/ui/logo"
+import amplitude from "@/lib/amplitude"
 
 export default function DashboardPage() {
     const { user, loading, signOut } = useAuth()
@@ -39,6 +40,12 @@ export default function DashboardPage() {
             try {
                 const data = await supabaseClient.getRFIs(user.id)
                 setRfis(data || [])
+
+                // Track dashboard view
+                amplitude.track('Dashboard Viewed', {
+                    rfiCount: data?.length || 0,
+                    hasRFIs: (data?.length || 0) > 0
+                })
             } catch (error) {
                 console.error("Error loading RFIs:", error)
                 // toast.error("Failed to load RFIs")

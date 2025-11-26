@@ -1,8 +1,27 @@
+'use client'
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, CheckCircle2 } from "lucide-react"
+import amplitude from "@/lib/amplitude"
 
 export function Hero() {
+    const handleStartSourcingClick = () => {
+        amplitude.track('CTA Clicked', {
+            ctaLocation: 'Hero',
+            ctaText: 'Start Sourcing',
+            destination: '/rfi'
+        })
+    }
+
+    const handleTalkToSalesClick = () => {
+        amplitude.track('CTA Clicked', {
+            ctaLocation: 'Hero',
+            ctaText: 'Talk to Sales',
+            destination: '/contact'
+        })
+    }
+
     return (
         <section className="relative overflow-hidden pt-24 md:pt-32 lg:pt-40 pb-16 md:pb-24">
             {/* Background Elements */}
@@ -26,12 +45,12 @@ export function Hero() {
                             </p>
                         </div>
                         <div className="flex flex-col gap-4 sm:flex-row">
-                            <Button size="lg" className="w-full sm:w-auto shadow-[0_0_20px_rgba(79,70,229,0.5)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] transition-all duration-300 text-base px-8 h-12 bg-primary hover:bg-primary/90" asChild>
+                            <Button size="lg" className="w-full sm:w-auto shadow-[0_0_20px_rgba(79,70,229,0.5)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] transition-all duration-300 text-base px-8 h-12 bg-primary hover:bg-primary/90" asChild onClick={handleStartSourcingClick}>
                                 <Link href="/rfi">
                                     Start Sourcing <ArrowRight className="ml-2 h-5 w-5" />
                                 </Link>
                             </Button>
-                            <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 h-12 border-white/10 hover:bg-white/5 glass" asChild>
+                            <Button size="lg" variant="outline" className="w-full sm:w-auto text-base px-8 h-12 border-white/10 hover:bg-white/5 glass" asChild onClick={handleTalkToSalesClick}>
                                 <Link href="/contact">
                                     Talk to Sales
                                 </Link>

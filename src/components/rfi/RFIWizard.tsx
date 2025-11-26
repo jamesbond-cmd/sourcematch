@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { supabaseClient } from "@/lib/supabase/client"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
+import amplitude from "@/lib/amplitude"
 
 export function RFIWizard() {
     const { user, signUp, signIn, loading } = useAuth()
@@ -166,12 +167,34 @@ export function RFIWizard() {
         }
     }, [loading, user, isNewRFI]) // Removed 'methods' from dependencies
 
-    // Save step to localStorage
+    // Save step to localStorage and track step views
     useEffect(() => {
-        if (isInitialized) {
+        if (isInitialized && currentStep !== 7) {
             localStorage.setItem("rfi_wizard_step", currentStep.toString())
+
+            // Track step view
+            amplitude.track('RFI Step Viewed', {
+                step: currentStep,
+                stepName: getStepName(currentStep),
+                hasCompany,
+                isLoggedIn: !!user
+            })
         }
-    }, [currentStep, isInitialized])
+    }, [currentStep, isInitialized, hasCompany, user])
+
+    // Helper to get step name for analytics
+    const getStepName = (step: number) => {
+        if (!user) {
+            const steps = ['Company Details', 'Account Creation', 'Product Overview', 'Requirements', 'Volumes & Markets', 'Review']
+            return steps[step - 1] || 'Unknown'
+        } else if (hasCompany) {
+            const steps = ['Product Overview', 'Requirements', 'Volumes & Markets', 'Review']
+            return steps[step - 1] || 'Unknown'
+        } else {
+            const steps = ['Company Details', 'Product Overview', 'Requirements', 'Volumes & Markets', 'Review']
+            return steps[step - 1] || 'Unknown'
+        }
+    }
 
     // Save form data to localStorage
     useEffect(() => {
@@ -369,6 +392,25 @@ export function RFIWizard() {
             }
 
             toast.success("RFI submitted successfully!")
+
+            // Track RFI submission
+            amplitude.track('RFI Submitted', {
+                productName: data.productName,
+                hasFiles: files.length > 0,
+                fileCount: files.length,
+                isNewAccount: !user,
+                destinationMarkets: data.destinationMarkets,
+                volumeUnit: data.volumeUnit
+            })
+
+            // Track account creation if new user
+            if (!user) {
+                amplitude.track('Account Created', {
+                    source: 'RFI Submission',
+                    companyName: data.companyName
+                })
+            }
+
             // Clear saved data
             localStorage.removeItem("rfi_wizard_data")
             localStorage.removeItem("rfi_wizard_step")
