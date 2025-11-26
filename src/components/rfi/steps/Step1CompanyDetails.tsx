@@ -29,7 +29,7 @@ export function Step1CompanyDetails() {
                 </div>
 
                 <div className="grid gap-2">
-                    <Label htmlFor="companyWebsite">Company website*</Label>
+                    <Label htmlFor="companyWebsite">Company website</Label>
                     <Input
                         id="companyWebsite"
                         placeholder="e.g. www.acmefoods.com"

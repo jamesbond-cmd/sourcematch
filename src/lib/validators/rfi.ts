@@ -3,7 +3,7 @@ import { z } from "zod"
 export const rfiSchema = z.object({
     // Step 1: Company Details
     companyName: z.string().min(1, "Company name is required"),
-    companyWebsite: z.string().url("Please enter a valid company website"),
+    companyWebsite: z.string().optional(),
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().optional(),
     workEmail: z.string().email("Please enter a valid work email"),
