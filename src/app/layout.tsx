@@ -76,6 +76,7 @@ const jsonLd = {
 };
 
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react"
 
 // ... existing imports
 
@@ -94,6 +95,7 @@ export default function RootLayout({
                 <AuthProvider>
                     {children}
                     <SpeedInsights />
+                    <Analytics />
                     <Toaster position="top-right" theme="dark" />
                     <CookieBanner />
                 </AuthProvider>
