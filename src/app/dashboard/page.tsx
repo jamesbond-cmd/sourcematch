@@ -16,6 +16,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Logo } from "@/components/ui/logo"
 
 export default function DashboardPage() {
     const { user, loading, signOut } = useAuth()
@@ -89,10 +90,7 @@ export default function DashboardPage() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
                         <Link href="/" className="flex items-center space-x-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
-                                S
-                            </div>
-                            <span className="font-bold text-xl">SourceMatch</span>
+                            <Logo />
                         </Link>
                         <div className="flex items-center space-x-4">
                             <Button variant="ghost" onClick={handleSignOut}>

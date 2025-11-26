@@ -1,6 +1,7 @@
 import { RFIWizard } from "@/components/rfi/RFIWizard"
 import Link from "next/link"
 
+import { Logo } from "@/components/ui/logo"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default function RFIPage() {
             <header className="border-b">
                 <div className="container mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8">
                     <Link href="/" className="font-bold text-xl">
-                        Batch Sourcing
+                        <Logo />
                     </Link>
                 </div>
             </header>

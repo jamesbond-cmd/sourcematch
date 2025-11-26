@@ -1,4 +1,5 @@
 import { useFormContext } from "react-hook-form"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -7,14 +8,58 @@ import { type RFIFormData } from "@/lib/validators/rfi"
 export function Step5Volumes() {
     const { register, formState: { errors }, watch, setValue } = useFormContext<RFIFormData>()
     const destinationMarkets = watch("destinationMarkets") || []
+    const [otherMarket, setOtherMarket] = useState("")
+    const [isOtherChecked, setIsOtherChecked] = useState(false)
+
+    // Initialize other state based on existing values
+    useEffect(() => {
+        const other = destinationMarkets.find(m => !markets.includes(m))
+        if (other) {
+            setIsOtherChecked(true)
+            setOtherMarket(other)
+        }
+    }, [])
 
     const handleMarketChange = (market: string, checked: boolean) => {
         const current = new Set(destinationMarkets)
-        if (checked) {
-            current.add(market)
+
+        if (market === "Other") {
+            setIsOtherChecked(checked)
+            if (!checked) {
+                // Remove custom market if unchecked
+                if (otherMarket) current.delete(otherMarket)
+                setOtherMarket("")
+            }
         } else {
-            current.delete(market)
+            if (checked) {
+                current.add(market)
+            } else {
+                current.delete(market)
+            }
         }
+
+        // Always sync other market if checked
+        if (isOtherChecked && otherMarket) {
+            current.add(otherMarket)
+        }
+
+        setValue("destinationMarkets", Array.from(current), { shouldValidate: true })
+    }
+
+    const handleOtherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value
+        setOtherMarket(newValue)
+
+        const current = new Set(destinationMarkets)
+        // Remove old custom value if it exists (we assume only one custom value for now or filter out known markets)
+        destinationMarkets.forEach(m => {
+            if (!markets.includes(m)) current.delete(m)
+        })
+
+        if (newValue) {
+            current.add(newValue)
+        }
+
         setValue("destinationMarkets", Array.from(current), { shouldValidate: true })
     }
 
@@ -79,7 +124,29 @@ export function Step5Volumes() {
                                 </Label>
                             </div>
                         ))}
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="market-other"
+                                checked={isOtherChecked}
+                                onCheckedChange={(checked) => handleMarketChange("Other", checked === true)}
+                            />
+                            <Label htmlFor="market-other" className="font-normal cursor-pointer">
+                                Other
+                            </Label>
+                        </div>
                     </div>
+
+                    {isOtherChecked && (
+                        <div className="mt-2">
+                            <Input
+                                placeholder="Enter other market"
+                                value={otherMarket}
+                                onChange={handleOtherInputChange}
+                                className="max-w-xs"
+                            />
+                        </div>
+                    )}
+
                     {errors.destinationMarkets && (
                         <p className="text-sm text-red-500">{errors.destinationMarkets.message}</p>
                     )}

@@ -38,10 +38,10 @@ export function FileUpload({ rfiId, onUploadComplete }: FileUploadProps) {
         try {
             // 1. Upload file to storage
             const filePath = `${rfiId}/${Date.now()}-${selectedFile.name}`
-            await supabaseClient.uploadFile("rfi-attachments", filePath, selectedFile)
+            await supabaseClient.uploadFile("attachments", filePath, selectedFile)
 
             // Get public URL
-            const publicUrl = await supabaseClient.getFileUrl("rfi-attachments", filePath)
+            const publicUrl = await supabaseClient.getFileUrl("attachments", filePath)
 
             // 2. Create attachment record in database
             await supabaseClient.createAttachment({
@@ -59,7 +59,11 @@ export function FileUpload({ rfiId, onUploadComplete }: FileUploadProps) {
             onUploadComplete()
         } catch (error: any) {
             console.error("Error uploading file:", error)
-            toast.error(`Failed to upload file: ${error.message || "Unknown error"}`)
+            if (error.message?.includes("Bucket not found")) {
+                toast.error("Configuration Error: Storage bucket 'attachments' not found. Please create it in Supabase.")
+            } else {
+                toast.error(`Failed to upload file: ${error.message || "Unknown error"}`)
+            }
         } finally {
             setIsUploading(false)
         }

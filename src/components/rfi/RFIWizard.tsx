@@ -406,7 +406,7 @@ export function RFIWizard() {
     const progressPercent = (displayStep / totalSteps) * 100
 
     return (
-        <div className="mx-auto max-w-3xl py-12 px-4">
+        <div className="mx-auto max-w-5xl py-12 px-4">
             {/* Progress Section */}
             <div className="mb-8">
                 <div className="flex items-center justify-between mb-3">
