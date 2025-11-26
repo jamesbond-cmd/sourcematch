@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { rfiSchema, type RFIFormData } from "@/lib/validators/rfi"
@@ -23,6 +23,7 @@ export function RFIWizard() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const isNewRFI = searchParams.get("new") === "true"
+    const hasResetRef = useRef(false)
 
     // Initialize state from localStorage if available, otherwise default based on auth
     const [currentStep, setCurrentStep] = useState(1)
@@ -41,14 +42,26 @@ export function RFIWizard() {
     useEffect(() => {
         if (loading || currentStep === 7) return
 
-        // Clear storage if starting new RFI
-        if (isNewRFI) {
-            console.log("Starting new RFI, clearing saved data")
+        // Clear storage if starting new RFI (only once)
+        if (isNewRFI && !hasResetRef.current) {
+            console.log("Starting new RFI, clearing saved data and resetting form")
+            hasResetRef.current = true
+
+            // Clear localStorage
             localStorage.removeItem("rfi_wizard_data")
             localStorage.removeItem("rfi_wizard_step")
             localStorage.removeItem("rfi_wizard_owner")
+
+            // Reset the form completely
+            methods.reset()
+
+            // Reset state
+            setCurrentStep(1)
+            setFiles([])
+
             // Remove the query param to prevent clearing on refresh
             router.replace("/rfi")
+            return // Exit early to prevent restoration
         }
 
         const savedStep = localStorage.getItem("rfi_wizard_step")
