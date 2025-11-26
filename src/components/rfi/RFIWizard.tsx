@@ -37,7 +37,7 @@ export function RFIWizard() {
 
     // Handle initialization and persistence
     useEffect(() => {
-        if (loading) return
+        if (loading || currentStep === 7) return
 
         const savedStep = localStorage.getItem("rfi_wizard_step")
         const savedData = localStorage.getItem("rfi_wizard_data")
