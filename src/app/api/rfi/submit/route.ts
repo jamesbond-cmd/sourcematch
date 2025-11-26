@@ -16,6 +16,14 @@ export async function POST(request: Request) {
             )
         }
 
+        if (!supabaseServiceKey.startsWith('ey') || supabaseServiceKey === 'your-service-role-key-here') {
+            console.error('Invalid Supabase Service Role Key format');
+            return NextResponse.json(
+                { error: 'Server configuration error: Invalid Service Role Key. Please check your environment variables.' },
+                { status: 500 }
+            )
+        }
+
         const supabase = createClient(supabaseUrl, supabaseServiceKey, {
             auth: {
                 autoRefreshToken: false,
