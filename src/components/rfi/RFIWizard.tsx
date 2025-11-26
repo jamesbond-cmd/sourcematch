@@ -58,6 +58,8 @@ export function RFIWizard() {
             // Reset state
             setCurrentStep(1)
             setFiles([])
+            setIsLoadingProfile(false)
+            setIsInitialized(true) // IMPORTANT: Set initialized to show the form
 
             // Remove the query param to prevent clearing on refresh
             router.replace("/rfi")
@@ -162,7 +164,7 @@ export function RFIWizard() {
             setCurrentStep(step)
             setIsInitialized(true)
         }
-    }, [loading, user, methods])
+    }, [loading, user, isNewRFI]) // Removed 'methods' from dependencies
 
     // Save step to localStorage
     useEffect(() => {
