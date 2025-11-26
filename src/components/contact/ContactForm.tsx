@@ -16,15 +16,38 @@ export function ContactForm() {
         e.preventDefault()
         setIsSubmitting(true)
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        const formData = new FormData(e.target as HTMLFormElement)
+        const data = {
+            firstName: formData.get('first-name'),
+            lastName: formData.get('last-name'),
+            email: formData.get('email'),
+            subject: formData.get('subject'),
+            message: formData.get('message'),
+        }
 
-        toast.success("Message sent successfully! We'll get back to you soon.")
-        setIsSubmitting(false)
+        try {
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
 
-        // Reset form
-        const form = e.target as HTMLFormElement
-        form.reset()
+            if (!response.ok) {
+                throw new Error('Failed to send message')
+            }
+
+            toast.success("Message sent successfully! We'll get back to you soon.")
+
+            // Reset form
+            const form = e.target as HTMLFormElement
+            form.reset()
+        } catch (error) {
+            toast.error("Something went wrong. Please try again later.")
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     return (
@@ -53,10 +76,10 @@ export function ContactForm() {
                         </div>
                         <div>
                             <h3 className="font-semibold mb-1">Office</h3>
-                            <p className="text-sm text-muted-foreground mb-2">Come say hello at our office HQ.</p>
+                            <p className="text-sm text-muted-foreground mb-2">Registered office address</p>
                             <p className="text-sm text-muted-foreground">
-                                100 Smith Street<br />
-                                Collingwood VIC 3066 AU
+                                124 City Road<br />
+                                London, United Kingdom, EC1V 2NX
                             </p>
                         </div>
                     </div>
@@ -84,28 +107,29 @@ export function ContactForm() {
                     <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="first-name">First name</Label>
-                            <Input id="first-name" placeholder="John" required />
+                            <Input id="first-name" name="first-name" placeholder="John" required />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="last-name">Last name</Label>
-                            <Input id="last-name" placeholder="Doe" required />
+                            <Input id="last-name" name="last-name" placeholder="Doe" required />
                         </div>
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="john@example.com" required />
+                        <Input id="email" name="email" type="email" placeholder="john@example.com" required />
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="subject">Subject</Label>
-                        <Input id="subject" placeholder="How can we help?" required />
+                        <Input id="subject" name="subject" placeholder="How can we help?" required />
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="message">Message</Label>
                         <Textarea
                             id="message"
+                            name="message"
                             placeholder="Tell us more about your inquiry..."
                             className="min-h-[150px]"
                             required
