@@ -57,9 +57,9 @@ export function FileUpload({ rfiId, onUploadComplete }: FileUploadProps) {
             toast.success("File uploaded successfully")
             handleClearFile()
             onUploadComplete()
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error uploading file:", error)
-            toast.error("Failed to upload file")
+            toast.error(`Failed to upload file: ${error.message || "Unknown error"}`)
         } finally {
             setIsUploading(false)
         }

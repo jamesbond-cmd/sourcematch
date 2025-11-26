@@ -51,6 +51,7 @@ export interface Attachment {
     file_size: number
     file_type: string
     file_url: string
+    uploaded_by?: string
     [key: string]: unknown
 }
 
