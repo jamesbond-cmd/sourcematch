@@ -4,6 +4,7 @@ import Link from "next/link"
 
 import { Logo } from "@/components/ui/logo"
 import { Metadata } from "next"
+import { HubSpot } from "@/components/HubSpot"
 
 export const metadata: Metadata = {
     title: "Create RFI - Batch Sourcing",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export default function RFIPage() {
     return (
         <div className="min-h-screen bg-background">
+            <HubSpot />
             <header className="border-b">
                 <div className="container mx-auto flex h-16 items-center px-4 sm:px-6 lg:px-8">
                     <Link href="/" className="font-bold text-xl">

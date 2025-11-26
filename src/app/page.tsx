@@ -8,10 +8,12 @@ import { FAQ } from "@/components/landing/FAQ"
 import { Footer } from "@/components/landing/Footer"
 import { Header } from "@/components/landing/Header"
 import { LatestResources } from "@/components/landing/LatestResources"
+import { HubSpot } from "@/components/HubSpot"
 
 export default function Home() {
     return (
         <main className="min-h-screen">
+            <HubSpot />
             <Header />
             <Hero />
             <SocialProof />

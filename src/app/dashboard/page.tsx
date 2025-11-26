@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Logo } from "@/components/ui/logo"
 import amplitude from "@/lib/amplitude"
+import { HubSpot } from "@/components/HubSpot"
 
 export default function DashboardPage() {
     const { user, loading, signOut } = useAuth()
@@ -92,6 +93,7 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-muted/30">
+            <HubSpot />
             {/* Header */}
             <header className="border-b bg-background">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">

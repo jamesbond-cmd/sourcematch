@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { supabaseClient } from "@/lib/supabase/client"
 import { EditRFI } from "@/components/rfi/EditRFI"
 import { toast } from "sonner"
+import { HubSpot } from "@/components/HubSpot"
 
 export default function EditRFIPage() {
     const { id } = useParams()
@@ -63,6 +64,7 @@ export default function EditRFIPage() {
 
     return (
         <div className="min-h-screen bg-muted/30 py-8">
+            <HubSpot />
             <div className="container mx-auto px-4">
                 <EditRFI rfi={rfiData} />
             </div>
