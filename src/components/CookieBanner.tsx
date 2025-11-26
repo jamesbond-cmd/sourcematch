@@ -46,7 +46,7 @@ export function CookieBanner() {
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6">
-            <Card className="mx-auto max-w-4xl border-2 shadow-2xl">
+            <Card className="mx-auto max-w-4xl border-2 shadow-2xl bg-background border-border">
                 <div className="p-6">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3">

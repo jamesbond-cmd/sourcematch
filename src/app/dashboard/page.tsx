@@ -110,7 +110,7 @@ export default function DashboardPage() {
                         <p className="text-muted-foreground">Manage your sourcing requests</p>
                     </div>
                     <Button asChild>
-                        <Link href="/rfi">
+                        <Link href="/rfi?new=true">
                             <Plus className="h-4 w-4 mr-2" />
                             New RFI
                         </Link>
@@ -135,7 +135,7 @@ export default function DashboardPage() {
                                 {filterStatus === "all" ? "Filter Status" : filterStatus.replace("_", " ")}
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="bg-background">
                             <DropdownMenuItem onClick={() => setFilterStatus("all")}>
                                 All Statuses
                             </DropdownMenuItem>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                                 Get started by creating your first sourcing request and connect with qualified suppliers
                             </p>
                             <Button size="lg" className="shadow-md hover:shadow-lg transition-all" asChild>
-                                <Link href="/rfi">
+                                <Link href="/rfi?new=true">
                                     <Plus className="h-5 w-5 mr-2" />
                                     Create Your First RFI
                                 </Link>

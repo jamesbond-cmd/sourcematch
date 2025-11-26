@@ -1,4 +1,5 @@
 import { RFIWizard } from "@/components/rfi/RFIWizard"
+import { Suspense } from "react"
 import Link from "next/link"
 
 import { Logo } from "@/components/ui/logo"
@@ -20,9 +21,10 @@ export default function RFIPage() {
                 </div>
             </header>
             <main className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <RFIWizard />
+                <Suspense fallback={<div className="flex justify-center p-8">Loading...</div>}>
+                    <RFIWizard />
+                </Suspense>
             </main>
         </div>
     )
 }
-

@@ -15,12 +15,14 @@ import { Step6Review } from "./steps/Step6Review"
 import { Step7Dashboard } from "@/components/rfi/steps/Step7Dashboard"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabaseClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 
 export function RFIWizard() {
     const { user, signUp, signIn, loading } = useAuth()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const isNewRFI = searchParams.get("new") === "true"
 
     // Initialize state from localStorage if available, otherwise default based on auth
     const [currentStep, setCurrentStep] = useState(1)
@@ -39,6 +41,16 @@ export function RFIWizard() {
     useEffect(() => {
         if (loading || currentStep === 7) return
 
+        // Clear storage if starting new RFI
+        if (isNewRFI) {
+            console.log("Starting new RFI, clearing saved data")
+            localStorage.removeItem("rfi_wizard_data")
+            localStorage.removeItem("rfi_wizard_step")
+            localStorage.removeItem("rfi_wizard_owner")
+            // Remove the query param to prevent clearing on refresh
+            router.replace("/rfi")
+        }
+
         const savedStep = localStorage.getItem("rfi_wizard_step")
         const savedData = localStorage.getItem("rfi_wizard_data")
         const savedOwner = localStorage.getItem("rfi_wizard_owner")
@@ -51,7 +63,7 @@ export function RFIWizard() {
             localStorage.removeItem("rfi_wizard_step")
             localStorage.removeItem("rfi_wizard_owner")
             // Do not restore data
-        } else if (savedData) {
+        } else if (savedData && !isNewRFI) {
             // Restore form data if owner matches
             try {
                 const parsedData = JSON.parse(savedData)

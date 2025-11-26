@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { editRfiSchema, type EditRFIFormData } from "@/lib/validators/rfi"
@@ -79,15 +79,65 @@ export function EditRFI({ rfi }: EditRFIProps) {
         toast.error("Please check the form for errors")
     }
 
-    const markets = ["USA", "Canada", "UK", "EU", "Australia", "Japan", "China", "Other"]
+    const markets = [
+        "United Kingdom", "Germany", "France", "Spain", "Italy",
+        "Netherlands", "Poland", "USA", "Canada", "UAE",
+        "Australia", "Japan", "China"
+    ]
     const selectedMarkets = watch("destinationMarkets") || []
 
+    const [otherMarket, setOtherMarket] = useState("")
+    const [isOtherChecked, setIsOtherChecked] = useState(false)
+
+    // Initialize other state
+    useEffect(() => {
+        if (rfi.destination_markets) {
+            const other = rfi.destination_markets.find((m: string) => !markets.includes(m))
+            if (other) {
+                setIsOtherChecked(true)
+                setOtherMarket(other)
+            }
+        }
+    }, [rfi.destination_markets])
+
     const toggleMarket = (market: string) => {
-        const current = selectedMarkets
-        const updated = current.includes(market)
-            ? current.filter((m) => m !== market)
-            : [...current, market]
-        setValue("destinationMarkets", updated, { shouldValidate: true })
+        const current = new Set(selectedMarkets)
+
+        if (market === "Other") {
+            const newChecked = !isOtherChecked
+            setIsOtherChecked(newChecked)
+            if (!newChecked) {
+                if (otherMarket) current.delete(otherMarket)
+                setOtherMarket("")
+            } else if (otherMarket) {
+                current.add(otherMarket)
+            }
+        } else {
+            if (current.has(market)) {
+                current.delete(market)
+            } else {
+                current.add(market)
+            }
+        }
+
+        setValue("destinationMarkets", Array.from(current), { shouldValidate: true })
+    }
+
+    const handleOtherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value
+        setOtherMarket(newValue)
+
+        const current = new Set(selectedMarkets)
+        // Remove old custom value
+        selectedMarkets.forEach(m => {
+            if (!markets.includes(m)) current.delete(m)
+        })
+
+        if (newValue) {
+            current.add(newValue)
+        }
+
+        setValue("destinationMarkets", Array.from(current), { shouldValidate: true })
     }
 
     return (
@@ -200,11 +250,7 @@ export function EditRFI({ rfi }: EditRFIProps) {
                     <div className="space-y-3">
                         <Label>Destination Markets</Label>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            {[
-                                "United Kingdom", "Germany", "France", "Spain", "Italy",
-                                "Netherlands", "Poland", "USA", "Canada", "UAE",
-                                "Australia", "Japan", "China", "Other"
-                            ].map((market) => (
+                            {markets.map((market) => (
                                 <div key={market} className="flex items-center space-x-2">
                                     <Checkbox
                                         id={`market-${market}`}
@@ -216,7 +262,28 @@ export function EditRFI({ rfi }: EditRFIProps) {
                                     </Label>
                                 </div>
                             ))}
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="market-other"
+                                    checked={isOtherChecked}
+                                    onCheckedChange={() => toggleMarket("Other")}
+                                />
+                                <Label htmlFor="market-other" className="font-normal cursor-pointer">
+                                    Other
+                                </Label>
+                            </div>
                         </div>
+
+                        {isOtherChecked && (
+                            <div className="mt-2">
+                                <Input
+                                    placeholder="Enter other market"
+                                    value={otherMarket}
+                                    onChange={handleOtherInputChange}
+                                    className="max-w-xs"
+                                />
+                            </div>
+                        )}
                         {errors.destinationMarkets && (
                             <p className="text-sm text-red-500">{errors.destinationMarkets.message}</p>
                         )}
