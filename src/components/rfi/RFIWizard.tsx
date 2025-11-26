@@ -272,10 +272,16 @@ export function RFIWizard() {
                     })
                     companyId = company.id
 
-                    // Update profile
+                    // Update profile with missing details
                     await supabaseClient.supabase
                         .from('profiles')
-                        .update({ company_id: companyId })
+                        .update({
+                            company_id: companyId,
+                            first_name: data.firstName,
+                            last_name: data.lastName,
+                            phone: data.phone,
+                            // terms_accepted is usually for new accounts, but we can update it if needed
+                        })
                         .eq('id', userId)
                 }
 
@@ -287,7 +293,9 @@ export function RFIWizard() {
                     product_name: data.productName,
                     requirements: data.requirements,
                     estimated_volume: data.estimatedVolume,
+                    annual_volume: data.targetAnnualVolume || data.estimatedVolume,
                     target_price: data.guidancePrice || "",
+                    guidance_price: data.guidancePrice || "",
                     timeline: data.timeline,
                     destination_markets: data.destinationMarkets,
                     status: "submitted",

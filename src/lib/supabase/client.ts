@@ -6,11 +6,16 @@ export interface RFI {
     status?: string
     requirements: string
     estimated_volume: string
+    annual_volume?: string
     target_price: string
+    guidance_price?: string
     timeline: string
     destination_markets: string[]
     created_by?: string
     company_id?: string
+    volume_unit?: string
+    product_description?: string
+    ai_status?: string
     [key: string]: unknown
 }
 
@@ -20,6 +25,8 @@ export interface Company {
     website?: string
     industry?: string
     description?: string
+    size?: string
+    country?: string
     [key: string]: unknown
 }
 
@@ -27,6 +34,10 @@ export interface Profile {
     id: string
     email: string
     full_name?: string
+    first_name?: string
+    last_name?: string
+    phone?: string
+    terms_accepted?: boolean
     role?: string
     company_id?: string
     [key: string]: unknown

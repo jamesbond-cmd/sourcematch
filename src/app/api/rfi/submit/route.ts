@@ -73,7 +73,11 @@ export async function POST(request: Request) {
             .update({
                 company_id: company.id,
                 role: 'buyer',
-                full_name: `${data.firstName} ${data.lastName}`
+                full_name: `${data.firstName} ${data.lastName}`,
+                first_name: data.firstName,
+                last_name: data.lastName,
+                phone: data.phone,
+                terms_accepted: data.termsAccepted
             })
             .eq('id', userId)
 
@@ -83,6 +87,10 @@ export async function POST(request: Request) {
                 id: userId,
                 email: data.workEmail,
                 full_name: `${data.firstName} ${data.lastName}`,
+                first_name: data.firstName,
+                last_name: data.lastName,
+                phone: data.phone,
+                terms_accepted: data.termsAccepted,
                 company_id: company.id,
                 role: 'buyer'
             })
@@ -97,7 +105,9 @@ export async function POST(request: Request) {
                 product_name: data.productName,
                 requirements: data.requirements,
                 estimated_volume: data.estimatedVolume,
+                annual_volume: data.targetAnnualVolume || data.estimatedVolume, // Map to annual_volume as well
                 target_price: data.guidancePrice || "",
+                guidance_price: data.guidancePrice || "", // Map to guidance_price
                 timeline: data.timeline,
                 destination_markets: data.destinationMarkets,
                 status: "submitted",
