@@ -75,6 +75,10 @@ const jsonLd = {
     "description": "The Operating System for Modern Sourcing in the Food & Beverage Industry."
 };
 
+import { SpeedInsights } from "@vercel/speed-insights/next"
+
+// ... existing imports
+
 export default function RootLayout({
     children,
 }: {
@@ -89,6 +93,7 @@ export default function RootLayout({
                 />
                 <AuthProvider>
                     {children}
+                    <SpeedInsights />
                     <Toaster position="top-right" theme="dark" />
                     <CookieBanner />
                 </AuthProvider>
