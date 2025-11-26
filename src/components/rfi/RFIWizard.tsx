@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 export function RFIWizard() {
-    const { user, signUp, loading } = useAuth()
+    const { user, signUp, signIn, loading } = useAuth()
     const router = useRouter()
 
     // Initialize state from localStorage if available, otherwise default based on auth
@@ -251,7 +251,7 @@ export function RFIWizard() {
                 // Auto-login to upload files
                 console.log("Auto-logging in...")
                 if (data.password) {
-                    await useAuth().signIn(data.workEmail, data.password)
+                    await signIn(data.workEmail, data.password)
                 }
             } else {
                 // LOGGED-IN FLOW: Use existing client-side logic
