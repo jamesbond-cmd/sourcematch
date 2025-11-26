@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         const { firstName, lastName, email, subject, message } = await request.json();
 
         const { data, error } = await resend.emails.send({
-            from: 'Batch Sourcing <onboarding@resend.dev>', // Use verified domain in production
+            from: 'Batch Sourcing <hello@updates.batchsourcing.com>',
             to: [contactEmail],
             subject: `New Contact Form Submission: ${subject}`,
             html: `
