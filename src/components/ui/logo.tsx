@@ -14,7 +14,7 @@ export function Logo({ className, showText = true }: LogoProps) {
                 {/* Middle Pill - Indigo (Primary) */}
                 <div className="w-full h-[6px] rounded-full bg-primary shadow-[0_0_10px_rgba(79,70,229,0.3)]" />
                 {/* Bottom Pill - Purple (Secondary) */}
-                <div className="w-full h-[6px] rounded-full bg-secondary shadow-[0_0_10px_rgba(124,58,237,0.3)]" />
+                <div className="w-3/4 h-[6px] rounded-full bg-secondary shadow-[0_0_10px_rgba(124,58,237,0.3)]" />
             </div>
 
             {showText && (
