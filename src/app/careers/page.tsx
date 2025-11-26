@@ -57,8 +57,8 @@ export default function CareersPage() {
                             <p className="text-muted-foreground">
                                 We don't have any open positions at the moment, but we're always looking for talented individuals.
                                 Check back soon or send us your resume at{" "}
-                                <a href="mailto:careers@batchsourcing.com" className="text-primary hover:underline">
-                                    careers@batchsourcing.com
+                                <a href="mailto:hello@batchsourcing.com" className="text-primary hover:underline">
+                                    hello@batchsourcing.com
                                 </a>
                             </p>
                         </Card>

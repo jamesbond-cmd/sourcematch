@@ -105,7 +105,7 @@ export default function TermsPage() {
                     <h2>14. Contact Us</h2>
                     <p>
                         If you have any questions about these Terms, please contact us at{" "}
-                        <a href="mailto:legal@batchsourcing.com">legal@batchsourcing.com</a>.
+                        <a href="mailto:hello@batchsourcing.com">hello@batchsourcing.com</a>.
                     </p>
                 </div>
             </main>

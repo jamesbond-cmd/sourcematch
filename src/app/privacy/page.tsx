@@ -94,7 +94,7 @@ export default function PrivacyPage() {
                     </ul>
                     <p>
                         To exercise these rights, please contact us at{" "}
-                        <a href="mailto:privacy@batchsourcing.com">privacy@batchsourcing.com</a>.
+                        <a href="mailto:hello@batchsourcing.com">hello@batchsourcing.com</a>.
                     </p>
 
                     <h2>9. Children's Privacy</h2>
@@ -118,7 +118,7 @@ export default function PrivacyPage() {
                     <h2>12. Contact Us</h2>
                     <p>
                         If you have any questions about this Privacy Policy, please contact us at{" "}
-                        <a href="mailto:privacy@batchsourcing.com">privacy@batchsourcing.com</a>.
+                        <a href="mailto:hello@batchsourcing.com">hello@batchsourcing.com</a>.
                     </p>
                 </div>
             </main>
