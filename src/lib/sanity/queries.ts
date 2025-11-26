@@ -103,12 +103,26 @@ export const recentPostsQuery = groq`
     title,
     slug,
     publishedAt,
+    excerpt,
     mainImage {
       asset->{
         _id,
         url
       },
       alt
+    },
+    author->{
+      name,
+      image {
+        asset->{
+          _id,
+          url
+        }
+      }
+    },
+    categories[]->{
+      title,
+      slug
     }
   }
 `

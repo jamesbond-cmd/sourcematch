@@ -18,8 +18,8 @@ export function Hero() {
                                 Trusted by 100+ food & beverage brands
                             </div>
                             <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl xl:text-7xl leading-tight">
-                                The Operating System for <br />
-                                <span className="text-gradient">Modern Sourcing</span>
+                                Find verified F&B manufacturers in Europe — <br />
+                                <span className="text-gradient">fast, safe, transparent</span>
                             </h1>
                             <p className="max-w-[600px] text-lg text-muted-foreground sm:text-xl leading-relaxed">
                                 Stop relying on guesswork. Use our AI-powered intelligence to source qualified manufacturers, compare quotes instantly, and secure the best deals.

@@ -72,8 +72,11 @@ export function Header() {
                         <Link href="/#categories" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:scale-105 transform duration-200">
                             Categories
                         </Link>
-                        <Link href="/#faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:scale-105 transform duration-200">
-                            FAQ
+                        <Link href="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:scale-105 transform duration-200">
+                            Blog
+                        </Link>
+                        <Link href="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:scale-105 transform duration-200">
+                            Contact
                         </Link>
                     </nav>
 
@@ -169,11 +172,18 @@ export function Header() {
                                 Categories
                             </Link>
                             <Link
-                                href="/#faq"
+                                href="/blog"
                                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                                 onClick={() => setMobileMenuOpen(false)}
                             >
-                                FAQ
+                                Blog
+                            </Link>
+                            <Link
+                                href="/contact"
+                                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                Contact
                             </Link>
                             <div className="flex flex-col space-y-2 pt-4 border-t border-white/10">
                                 {user ? (
