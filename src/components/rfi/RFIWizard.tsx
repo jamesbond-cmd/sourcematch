@@ -369,17 +369,15 @@ export function RFIWizard() {
                         const filePath = `${rfiId}/${fileName}`
 
                         // Upload file to storage
-                        await supabaseClient.uploadFile("rfi-attachments", filePath, file)
+                        await supabaseClient.uploadFile("attachments", filePath, file)
 
                         // Get public URL
-                        const publicUrl = await supabaseClient.getFileUrl("rfi-attachments", filePath)
+                        const publicUrl = await supabaseClient.getFileUrl("attachments", filePath)
 
                         // Create attachment record
                         await supabaseClient.createAttachment({
                             rfi_id: rfiId,
                             file_name: file.name,
-                            file_path: filePath,
-                            file_size: file.size,
                             file_type: file.type,
                             file_url: publicUrl
                         })

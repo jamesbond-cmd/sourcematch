@@ -47,11 +47,8 @@ export function FileUpload({ rfiId, onUploadComplete }: FileUploadProps) {
             await supabaseClient.createAttachment({
                 rfi_id: rfiId,
                 file_name: selectedFile.name,
-                file_path: filePath,
-                file_size: selectedFile.size,
                 file_type: selectedFile.type,
                 file_url: publicUrl,
-                uploaded_by: user!.id
             })
 
             toast.success("File uploaded successfully")

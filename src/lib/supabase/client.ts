@@ -47,8 +47,8 @@ export interface Attachment {
     id?: string
     rfi_id: string
     file_name: string
-    file_path: string
-    file_size: number
+    file_path?: string
+    file_size?: number
     file_type: string
     file_url: string
     uploaded_by?: string
