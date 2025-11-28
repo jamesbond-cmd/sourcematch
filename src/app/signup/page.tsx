@@ -37,7 +37,9 @@ export default function SignupPage() {
         setLoading(true)
 
         try {
-            await signUp(email, password)
+            // Extract first name from email for welcome email
+            const firstName = email.split('@')[0]
+            await signUp(email, password, { first_name: firstName })
             router.push("/dashboard")
         } catch (err: any) {
             setError(err.message || "Failed to create account")
