@@ -80,10 +80,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const signInWithGoogle = async () => {
         const supabase = createClient()
+
+        // Use environment variable if set, otherwise construct the URL
+        const redirectUrl = process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URL ||
+            `${window.location.origin}/api/auth/callback`
+
+        console.log('[OAuth] Redirecting to:', redirectUrl)
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-                redirectTo: `${window.location.origin}/api/auth/callback`,
+                redirectTo: redirectUrl,
             },
         })
         if (error) throw error
