@@ -26,12 +26,19 @@ A Next.js platform for B2B food and beverage sourcing, featuring an AI-powered R
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `OPENAI_API_KEY`
 
-3. **Run the development server**:
+3. **Configure Google OAuth** (optional):
+   - Create a Google Cloud project and OAuth 2.0 credentials
+   - In Supabase Dashboard → Authentication → Providers, enable Google
+   - Add your Google Client ID and Client Secret
+   - Configure authorized redirect URI: `https://[YOUR-PROJECT-REF].supabase.co/auth/v1/callback`
+   - See [Supabase OAuth docs](https://supabase.com/docs/guides/auth/social-login/auth-google) for details
+
+4. **Run the development server**:
    ```bash
    npm run dev
    ```
 
-4. **Open the app**:
+5. **Open the app**:
    Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Project Structure
