@@ -1,4 +1,4 @@
-import { Heading, Section } from '@react-email/components';
+import { Heading, Section, Text } from '@react-email/components';
 import * as React from 'react';
 import { colors } from '../styles/colors';
 import { typography } from '../styles/typography';
@@ -10,7 +10,14 @@ interface EmailHeaderProps {
 export function EmailHeader({ logoUrl }: EmailHeaderProps) {
     return (
         <Section style={header}>
-            <Heading style={brandName}>Batch Sourcing</Heading>
+            <div style={linesContainer}>
+                <div style={lineBlue}></div>
+                <div style={lineIndigo}></div>
+                <div style={linePurple}></div>
+            </div>
+            <Heading style={brandName}>
+                Batch <Text style={sourcingText}>Sourcing</Text>
+            </Heading>
         </Section>
     );
 }
@@ -24,10 +31,46 @@ const header = {
     borderTopRightRadius: '8px',
 };
 
+const linesContainer = {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '3px',
+    marginBottom: '12px',
+};
+
+const lineBlue = {
+    width: '32px',
+    height: '6px',
+    backgroundColor: '#3b82f6', // blue-500
+    borderRadius: '999px',
+};
+
+const lineIndigo = {
+    width: '32px',
+    height: '6px',
+    backgroundColor: '#4f46e5', // indigo-600 (primary)
+    borderRadius: '999px',
+};
+
+const linePurple = {
+    width: '24px', // 3/4 of 32px
+    height: '6px',
+    backgroundColor: '#7c3aed', // purple-600 (secondary)
+    borderRadius: '999px',
+};
+
 const brandName = {
     margin: '0',
-    fontSize: typography.fontSize['3xl'],
+    fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
-    color: colors.primary,
+    color: colors.text.primary,
     letterSpacing: '-0.5px',
+    display: 'inline',
+};
+
+const sourcingText = {
+    color: colors.text.muted,
+    fontWeight: typography.fontWeight.bold,
+    fontSize: typography.fontSize['2xl'],
 };
