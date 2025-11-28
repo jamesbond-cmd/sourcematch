@@ -25,7 +25,43 @@ export async function GET(request: NextRequest) {
                 },
             }
         )
-        await supabase.auth.exchangeCodeForSession(code)
+
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
+        // Send welcome email for new users (Google OAuth)
+        if (data?.user && !error) {
+            // Check if this is a new user by checking created_at timestamp
+            const userCreatedAt = new Date(data.user.created_at)
+            const now = new Date()
+            const timeDiff = now.getTime() - userCreatedAt.getTime()
+            const isNewUser = timeDiff < 10000 // User created within last 10 seconds
+
+            if (isNewUser) {
+                try {
+                    // Extract first name from user metadata or email
+                    const firstName =
+                        data.user.user_metadata?.full_name?.split(' ')[0] ||
+                        data.user.user_metadata?.name?.split(' ')[0] ||
+                        data.user.email?.split('@')[0] ||
+                        'User'
+
+                    // Send welcome email (don't block OAuth flow if it fails)
+                    await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || requestUrl.origin}/api/emails/send-welcome`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: data.user.email,
+                            firstName: firstName,
+                        }),
+                    })
+
+                    console.log('Welcome email sent for new OAuth user:', data.user.email)
+                } catch (emailError) {
+                    console.error('Failed to send welcome email for OAuth user:', emailError)
+                    // Don't throw - email failure shouldn't block OAuth flow
+                }
+            }
+        }
     }
 
     // URL to redirect to after sign in process completes
