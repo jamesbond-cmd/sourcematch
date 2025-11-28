@@ -1,5 +1,7 @@
 "use client"
 
+// Force rebuild: OAuth should redirect to /api/auth/callback (updated 2024-11-28)
+
 import { createContext, useContext, useEffect, useState } from "react"
 import { User, Session } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
