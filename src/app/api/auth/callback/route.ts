@@ -30,19 +30,16 @@ export async function GET(request: NextRequest) {
 
         // Send welcome email for new users (Google OAuth)
         if (data?.user && !error) {
-            // TEMPORARY: Removed new user check for debugging
-            // TODO: Re-enable this check once we verify emails are working
-            /*
+            // Check if this is a new user by checking created_at timestamp
             const userCreatedAt = new Date(data.user.created_at)
             const now = new Date()
             const timeDiff = now.getTime() - userCreatedAt.getTime()
             const isNewUser = timeDiff < 60000 // User created within last 60 seconds
-            */
-            const isNewUser = true // TEMPORARY: Always send email for testing
 
             console.log('[OAuth Callback] User:', data.user.email)
-            console.log('[OAuth Callback] Created at:', data.user.created_at)
-            console.log('[OAuth Callback] Is new user:', isNewUser, '(FORCED TRUE FOR TESTING)')
+            console.log('[OAuth Callback] Created at:', userCreatedAt.toISOString())
+            console.log('[OAuth Callback] Time diff (ms):', timeDiff)
+            console.log('[OAuth Callback] Is new user:', isNewUser)
 
             if (isNewUser) {
                 try {

@@ -10,14 +10,20 @@ interface EmailHeaderProps {
 export function EmailHeader({ logoUrl }: EmailHeaderProps) {
     return (
         <Section style={header}>
-            <div style={linesContainer}>
-                <div style={lineBlue}></div>
-                <div style={lineIndigo}></div>
-                <div style={linePurple}></div>
-            </div>
-            <Heading style={brandName}>
-                Batch <Text style={sourcingText}>Sourcing</Text>
-            </Heading>
+            <table style={logoTable}>
+                <tr>
+                    <td style={linesCell}>
+                        <div style={lineBlue}></div>
+                        <div style={lineIndigo}></div>
+                        <div style={linePurple}></div>
+                    </td>
+                    <td style={textCell}>
+                        <Heading style={brandName}>
+                            Batch <Text style={sourcingText}>Sourcing</Text>
+                        </Heading>
+                    </td>
+                </tr>
+            </table>
         </Section>
     );
 }
@@ -31,9 +37,18 @@ const header = {
     borderTopRightRadius: '8px',
 };
 
-const linesContainer = {
-    textAlign: 'center' as const,
-    marginBottom: '12px',
+const logoTable = {
+    margin: '0 auto',
+    borderCollapse: 'collapse' as const,
+};
+
+const linesCell = {
+    paddingRight: '12px',
+    verticalAlign: 'middle' as const,
+};
+
+const textCell = {
+    verticalAlign: 'middle' as const,
 };
 
 const lineBlue = {
@@ -41,8 +56,7 @@ const lineBlue = {
     height: '6px',
     backgroundColor: '#3b82f6', // blue-500
     borderRadius: '999px',
-    margin: '0 auto 3px auto',
-    display: 'block',
+    marginBottom: '3px',
 };
 
 const lineIndigo = {
@@ -50,8 +64,7 @@ const lineIndigo = {
     height: '6px',
     backgroundColor: '#4f46e5', // indigo-600 (primary)
     borderRadius: '999px',
-    margin: '0 auto 3px auto',
-    display: 'block',
+    marginBottom: '3px',
 };
 
 const linePurple = {
@@ -59,8 +72,6 @@ const linePurple = {
     height: '6px',
     backgroundColor: '#7c3aed', // purple-600 (secondary)
     borderRadius: '999px',
-    margin: '0 auto',
-    display: 'block',
 };
 
 const brandName = {
