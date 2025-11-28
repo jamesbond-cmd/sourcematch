@@ -1,9 +1,34 @@
 import { MetadataRoute } from 'next'
+import { client } from '@/lib/sanity/client'
+import { groq } from 'next-sanity'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// Query to get all blog post slugs and dates
+const sitemapPostsQuery = groq`
+  *[_type == "post" && defined(publishedAt)] {
+    "slug": slug.current,
+    publishedAt,
+    _updatedAt
+  }
+`
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://batchsourcing.com'
 
-    return [
+    // Fetch blog posts
+    let blogPosts: MetadataRoute.Sitemap = []
+    try {
+        const posts = await client.fetch(sitemapPostsQuery)
+        blogPosts = posts.map((post: any) => ({
+            url: `${baseUrl}/blog/${post.slug}`,
+            lastModified: new Date(post._updatedAt || post.publishedAt),
+            changeFrequency: 'daily' as const,
+            priority: 0.7,
+        }))
+    } catch (error) {
+        console.error('Error fetching blog posts for sitemap:', error)
+    }
+
+    const staticPages: MetadataRoute.Sitemap = [
         {
             url: baseUrl,
             lastModified: new Date(),
@@ -47,4 +72,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.9,
         },
     ]
+
+    return [...staticPages, ...blogPosts]
 }
+
