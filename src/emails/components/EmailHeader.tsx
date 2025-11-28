@@ -32,10 +32,7 @@ const header = {
 };
 
 const linesContainer = {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    gap: '3px',
+    textAlign: 'center' as const,
     marginBottom: '12px',
 };
 
@@ -44,6 +41,8 @@ const lineBlue = {
     height: '6px',
     backgroundColor: '#3b82f6', // blue-500
     borderRadius: '999px',
+    margin: '0 auto 3px auto',
+    display: 'block',
 };
 
 const lineIndigo = {
@@ -51,6 +50,8 @@ const lineIndigo = {
     height: '6px',
     backgroundColor: '#4f46e5', // indigo-600 (primary)
     borderRadius: '999px',
+    margin: '0 auto 3px auto',
+    display: 'block',
 };
 
 const linePurple = {
@@ -58,6 +59,8 @@ const linePurple = {
     height: '6px',
     backgroundColor: '#7c3aed', // purple-600 (secondary)
     borderRadius: '999px',
+    margin: '0 auto',
+    display: 'block',
 };
 
 const brandName = {
