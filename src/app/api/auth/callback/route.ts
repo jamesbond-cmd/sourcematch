@@ -34,7 +34,12 @@ export async function GET(request: NextRequest) {
             const userCreatedAt = new Date(data.user.created_at)
             const now = new Date()
             const timeDiff = now.getTime() - userCreatedAt.getTime()
-            const isNewUser = timeDiff < 10000 // User created within last 10 seconds
+            const isNewUser = timeDiff < 60000 // User created within last 60 seconds (increased from 10)
+
+            console.log('[OAuth Callback] User:', data.user.email)
+            console.log('[OAuth Callback] Created at:', userCreatedAt.toISOString())
+            console.log('[OAuth Callback] Time diff (ms):', timeDiff)
+            console.log('[OAuth Callback] Is new user:', isNewUser)
 
             if (isNewUser) {
                 try {
@@ -45,8 +50,10 @@ export async function GET(request: NextRequest) {
                         data.user.email?.split('@')[0] ||
                         'User'
 
+                    console.log('[OAuth Callback] Sending welcome email to:', data.user.email, 'firstName:', firstName)
+
                     // Send welcome email (don't block OAuth flow if it fails)
-                    await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || requestUrl.origin}/api/emails/send-welcome`, {
+                    const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || requestUrl.origin}/api/emails/send-welcome`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -55,11 +62,20 @@ export async function GET(request: NextRequest) {
                         }),
                     })
 
-                    console.log('Welcome email sent for new OAuth user:', data.user.email)
+                    const emailResult = await emailResponse.json()
+                    console.log('[OAuth Callback] Email API response:', emailResponse.status, emailResult)
+
+                    if (emailResponse.ok) {
+                        console.log('[OAuth Callback] ✅ Welcome email sent successfully for:', data.user.email)
+                    } else {
+                        console.error('[OAuth Callback] ❌ Email API returned error:', emailResult)
+                    }
                 } catch (emailError) {
-                    console.error('Failed to send welcome email for OAuth user:', emailError)
+                    console.error('[OAuth Callback] ❌ Failed to send welcome email:', emailError)
                     // Don't throw - email failure shouldn't block OAuth flow
                 }
+            } else {
+                console.log('[OAuth Callback] Skipping welcome email - existing user')
             }
         }
     }
