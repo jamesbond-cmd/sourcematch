@@ -389,6 +389,45 @@ export function RFIWizard() {
                 }
             }
 
+            // Step 6: Send confirmation emails (don't block submission if emails fail)
+            if (rfiId) {
+                try {
+                    // Send buyer confirmation email
+                    await fetch('/api/emails/send-rfi-submitted', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: data.workEmail,
+                            firstName: data.firstName,
+                            productName: data.productName,
+                            rfiId: rfiId,
+                            submittedAt: new Date().toISOString(),
+                            estimatedVolume: `${data.estimatedVolume} ${data.volumeUnit}`,
+                        }),
+                    })
+
+                    // Send admin notification email
+                    await fetch('/api/emails/send-rfi-received', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            productName: data.productName,
+                            rfiId: rfiId,
+                            buyerName: `${data.firstName} ${data.lastName || ''}`.trim(),
+                            buyerEmail: data.workEmail,
+                            buyerCompany: data.companyName,
+                            estimatedVolume: `${data.estimatedVolume} ${data.volumeUnit}`,
+                            destinationMarkets: data.destinationMarkets,
+                        }),
+                    })
+
+                    console.log('Confirmation emails sent successfully')
+                } catch (emailError) {
+                    console.error('Failed to send confirmation emails:', emailError)
+                    // Don't throw - email failure shouldn't block RFI submission
+                }
+            }
+
             toast.success("RFI submitted successfully!")
 
             // Track RFI submission

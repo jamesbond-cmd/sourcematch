@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const signUp = async (email: string, password: string, metadata?: Record<string, unknown>) => {
         const supabase = createClient()
-        const { error } = await supabase.auth.signUp({
+        const { error, data } = await supabase.auth.signUp({
             email,
             password,
             options: {
@@ -57,6 +57,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             },
         })
         if (error) throw error
+
+        // Send welcome email (don't block signup if it fails)
+        if (data.user && metadata?.first_name) {
+            try {
+                await fetch('/api/emails/send-welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: data.user.email,
+                        firstName: metadata.first_name as string,
+                    }),
+                })
+            } catch (err) {
+                console.error('Failed to send welcome email:', err)
+                // Don't throw - email failure shouldn't block signup
+            }
+        }
     }
 
     const signInWithGoogle = async () => {
@@ -64,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
             options: {
-                redirectTo: `${window.location.origin}/api/auth/callback`,
+                redirectTo: `${window.location.origin}/dashboard`,
             },
         })
         if (error) throw error

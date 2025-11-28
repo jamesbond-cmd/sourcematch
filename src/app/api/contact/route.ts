@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { renderEmail } from '@/lib/email/render-email';
+import ContactFormEmail from '@/emails/templates/ContactFormEmail';
 
 export async function POST(request: Request) {
     const apiKey = process.env.RESEND_API_KEY;
@@ -15,18 +17,23 @@ export async function POST(request: Request) {
     try {
         const { firstName, lastName, email, subject, message } = await request.json();
 
+        // Render email template
+        const html = await renderEmail(
+            ContactFormEmail({
+                firstName,
+                lastName,
+                email,
+                subject,
+                message,
+            })
+        );
+
         const { data, error } = await resend.emails.send({
             from: 'Batch Sourcing <hello@updates.batchsourcing.com>',
             to: [contactEmail],
+            replyTo: email,
             subject: `New Contact Form Submission: ${subject}`,
-            html: `
-        <h1>New Contact Form Submission</h1>
-        <p><strong>Name:</strong> ${firstName} ${lastName}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-      `,
+            html,
         });
 
         if (error) {
@@ -40,3 +47,4 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
