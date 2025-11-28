@@ -1,23 +1,16 @@
-import { Img, Section } from '@react-email/components';
+import { Heading, Section } from '@react-email/components';
 import * as React from 'react';
 import { colors } from '../styles/colors';
+import { typography } from '../styles/typography';
 
 interface EmailHeaderProps {
     logoUrl?: string;
 }
 
 export function EmailHeader({ logoUrl }: EmailHeaderProps) {
-    const defaultLogoUrl = 'https://batchsourcing.com/logo.png';
-
     return (
         <Section style={header}>
-            <Img
-                src={logoUrl || defaultLogoUrl}
-                alt="Batch Sourcing"
-                width="150"
-                height="auto"
-                style={logo}
-            />
+            <Heading style={brandName}>Batch Sourcing</Heading>
         </Section>
     );
 }
@@ -31,6 +24,10 @@ const header = {
     borderTopRightRadius: '8px',
 };
 
-const logo = {
-    margin: '0 auto',
+const brandName = {
+    margin: '0',
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary,
+    letterSpacing: '-0.5px',
 };
